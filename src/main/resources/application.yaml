@@ -1,0 +1,91 @@
+spring:
+  application:
+    name: galactic-tournament-api
+    description: "Tournament management microservice for Galactic competitions"
+
+  # Data Source Configuration (PostgreSQL)
+  datasource:
+    url: jdbc:postgresql://localhost:5555/galactic_tournament
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:tournament_password}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      auto-commit: true
+
+  # CORS Configuration (Explicit origins only)
+  web:
+    cors:
+      allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:4200}
+      allowed-methods: GET,POST,PUT,DELETE,OPTIONS
+      allowed-headers: "*"
+      allow-credentials: true
+      max-age: 3600
+
+  # Error Handling
+  error:
+    include-message: always
+    include-binding-errors: always
+    include-stacktrace: on-param
+    include-exception: false
+
+# Server Configuration
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+  error:
+    whitelabel:
+      enabled: false
+  shutdown: graceful
+  tomcat:
+    threads:
+      max: 200
+      min-spare: 10
+    accept-count: 100
+    max-connections: 10000
+
+# Logging Configuration
+logging:
+  level:
+    ROOT: INFO
+    com.technicaltests.mv: DEBUG
+    org.springframework.web: DEBUG
+    org.springframework.security: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+  pattern:
+    console: "%d{ISO8601} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{ISO8601} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/galactic-tournament-api.log
+    max-size: 10MB
+    max-history: 30
+    total-size-cap: 1GB
+
+# OpenAPI/Swagger Configuration
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    use-root-path: true
+    operations-sorter: method
+    tags-sorter: alpha
+  show-actuator: true
+
+# Application-specific Configuration
+app:
+  name: "Galactic Tournament API"
+  version: "@project.version@"
+  description: "Tournament management microservice for Galactic competitions"
+  validation:
+    enabled: true
+  pagination:
+    default-page-size: 20
+    max-page-size: 100
