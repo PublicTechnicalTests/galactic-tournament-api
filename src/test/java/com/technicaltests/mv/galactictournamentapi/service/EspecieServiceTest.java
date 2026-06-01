@@ -221,4 +221,3 @@ class EspecieServiceTest {
                 .isInstanceOf(SpecieNotFoundException.class);
     }
 }
-

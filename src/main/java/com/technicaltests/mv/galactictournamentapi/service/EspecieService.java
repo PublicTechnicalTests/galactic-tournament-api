@@ -1,14 +1,21 @@
 package com.technicaltests.mv.galactictournamentapi.service;
 
 import com.technicaltests.mv.galactictournamentapi.dto.CreateSpecieRequest;
+import com.technicaltests.mv.galactictournamentapi.dto.PaginatedSpecieResponse;
+import com.technicaltests.mv.galactictournamentapi.dto.SpecieListQuery;
 import com.technicaltests.mv.galactictournamentapi.dto.SpecieResponse;
 import com.technicaltests.mv.galactictournamentapi.entity.Especie;
 import com.technicaltests.mv.galactictournamentapi.exception.SpecieAlreadyExistsException;
 import com.technicaltests.mv.galactictournamentapi.exception.SpecieNotFoundException;
 import com.technicaltests.mv.galactictournamentapi.mapper.EspecieMapper;
 import com.technicaltests.mv.galactictournamentapi.repository.EspecieRepository;
+import com.technicaltests.mv.galactictournamentapi.specification.EspecieSpecification;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,7 +28,7 @@ import java.util.List;
  * and validation. Implements transactional operations and logging for audit purposes.
  *
  * @author Backend Team
- * @version 1.0
+ * @version 2.0
  * @since 2026
  */
 @Service
@@ -32,6 +39,8 @@ public class EspecieService {
 
     private final EspecieRepository especieRepository;
     private final EspecieMapper especieMapper;
+
+    private static final int MAX_PAGE_SIZE = 100;
 
     /**
      * Creates a new species in the tournament.
@@ -114,6 +123,60 @@ public class EspecieService {
         return especies.stream()
                 .map(especieMapper::toResponse)
                 .toList();
+    }
+
+    /**
+     * Retrieves a paginated list of species with filters and sorting.
+     *
+     * @param query the query parameters including pagination, filters, and sorting
+     * @return a paginated response with species data
+     */
+    @Transactional(readOnly = true)
+    public PaginatedSpecieResponse listSpecies(SpecieListQuery query) {
+        log.info("Listing species with query: page={}, size={}, sortBy={}, searchTerm={}",
+                query.page(), query.size(), query.sortBy(), query.searchTerm());
+
+        // Apply defaults to null values
+        SpecieListQuery normalizedQuery = query.withDefaults();
+
+        // Validate and limit page size
+        int pageSize = Math.min(normalizedQuery.size(), MAX_PAGE_SIZE);
+
+        // Create sort order
+        Sort.Direction direction = "DESC".equalsIgnoreCase(normalizedQuery.sortDirection())
+                ? Sort.Direction.DESC
+                : Sort.Direction.ASC;
+        Sort sort = Sort.by(direction, normalizedQuery.sortBy());
+
+        // Create pageable
+        Pageable pageable = PageRequest.of(normalizedQuery.page(), pageSize, sort);
+
+        // Create specification for filters
+        var spec = EspecieSpecification.filterBy(
+                normalizedQuery.searchTerm(),
+                normalizedQuery.minPower(),
+                normalizedQuery.maxPower()
+        );
+
+        // Fetch paginated results
+        Page<Especie> page = especieRepository.findAll(spec, pageable);
+
+        // Convert to response
+        List<SpecieResponse> content = page.getContent().stream()
+                .map(especieMapper::toResponse)
+                .toList();
+
+        log.info("Retrieved {} species from page {}", content.size(), normalizedQuery.page());
+
+        return new PaginatedSpecieResponse(
+                content,
+                page.getTotalElements(),
+                page.getTotalPages(),
+                page.getNumber(),
+                page.getSize(),
+                page.hasNext(),
+                page.hasPrevious()
+        );
     }
 
     /**
