@@ -8,6 +8,8 @@ import java.time.LocalDateTime;
  * Entity representing a battle in the galactic tournament.
  *
  * This entity records battles between two species and the winner.
+ * This entity stores information about battles that occur in the galactic tournament.
+ * Each battle has two contenders and a winner determined by their power levels.
  *
  * @author Backend Team
  * @version 1.0
@@ -162,6 +164,7 @@ public class Combate {
      * Sets the winner ID.
      *
      * @param idGanador the winner species ID
+     * @param idGanador the winner species ID to set
      */
     public void setIdGanador(Long idGanador) {
         this.idGanador = idGanador;

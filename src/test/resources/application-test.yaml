@@ -1,10 +1,20 @@
 spring:
+  autoconfigure:
+    exclude:
+      - org.springdoc.core.configuration.SpringDocQuerydslConfiguration
+
   application:
     name: galactic-tournament-api-test
 
   # Data Source Configuration (PostgreSQL via TestContainers)
   datasource:
     driver-class-name: org.postgresql.Driver
+
+  # AI MCP Configuration - DISABLED to avoid QuerydslPredicateOperationCustomizer error
+  ai:
+    mcp:
+      client:
+        enabled: false
 
   jpa:
     hibernate:
@@ -25,4 +35,3 @@ logging:
     com.technicaltests.mv: DEBUG
     org.springframework.test: DEBUG
     org.hibernate.SQL: DEBUG
-

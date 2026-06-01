@@ -63,6 +63,7 @@ public class CombateService {
                 ganador.getIdEspecie()
         );
 
+        // Save battle
         Combate savedCombate = combateRepository.save(combate);
 
         log.info("Battle {} completed. Winner: {} (ID: {})",
@@ -163,6 +164,23 @@ public class CombateService {
                 : contender2;
         log.debug("Winner determined by alphabetical order. Winner: {}", winner.getNombre());
         return winner;
+    }
+
+    /**
+     * Retrieves a battle by its ID.
+     *
+     * @param id the battle ID
+     * @return the battle entity
+     * @throws org.springframework.data.crossstore.ChangeSetPersister.NotFoundException if not found
+     */
+    @Transactional(readOnly = true)
+    public Combate getBattleById(Long id) {
+        log.info("Retrieving battle with ID: {}", id);
+        return combateRepository.findById(id)
+                .orElseThrow(() -> {
+                    log.warn("Battle not found with ID: {}", id);
+                    return new RuntimeException("Battle not found with ID: " + id);
+                });
     }
 
     /**

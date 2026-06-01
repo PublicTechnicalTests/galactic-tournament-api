@@ -30,4 +30,3 @@ public class SpecieNotFoundException extends RuntimeException {
         super(message, cause);
     }
 }
-

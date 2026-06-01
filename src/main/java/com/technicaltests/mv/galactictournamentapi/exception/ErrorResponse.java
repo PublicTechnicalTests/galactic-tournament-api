@@ -65,4 +65,3 @@ public class ErrorResponse {
         private Object rejectedValue;
     }
 }
-

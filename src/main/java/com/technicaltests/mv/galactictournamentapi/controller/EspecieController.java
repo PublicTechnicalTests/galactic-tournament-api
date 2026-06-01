@@ -1,12 +1,15 @@
 package com.technicaltests.mv.galactictournamentapi.controller;
 
 import com.technicaltests.mv.galactictournamentapi.dto.CreateSpecieRequest;
+import com.technicaltests.mv.galactictournamentapi.dto.PaginatedSpecieResponse;
+import com.technicaltests.mv.galactictournamentapi.dto.SpecieListQuery;
 import com.technicaltests.mv.galactictournamentapi.dto.SpecieResponse;
 import com.technicaltests.mv.galactictournamentapi.service.EspecieService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +26,7 @@ import java.util.List;
  * All endpoints include comprehensive API documentation via Swagger/OpenAPI.
  *
  * @author Backend Team
- * @version 1.0
+ * @version 2.0
  * @since 2026
  */
 @RestController
@@ -58,19 +61,68 @@ public class EspecieController {
     }
 
     /**
-     * Retrieves all species in the tournament.
+     * Retrieves all species in the tournament (deprecated, use list endpoint).
      *
      * @return ResponseEntity with a list of all species and HTTP 200 (OK) status
      */
     @GetMapping
+    @Deprecated(since = "2.0", forRemoval = true)
     @Operation(
-            summary = "Retrieve all species",
-            description = "Returns a list of all species registered in the galactic tournament"
+            summary = "Retrieve all species (deprecated)",
+            description = "Returns a list of all species registered in the galactic tournament. Use /list endpoint with pagination instead."
     )
     @ApiResponse(responseCode = "200", description = "Species list retrieved successfully")
     public ResponseEntity<List<SpecieResponse>> getAllSpecies() {
         log.info("GET request to retrieve all species");
         List<SpecieResponse> response = especieService.getAllSpecies();
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Retrieves a paginated list of species with optional filtering and sorting.
+     *
+     * @param page           the page number (0-indexed, default 0)
+     * @param size           the page size (default 20, max 100)
+     * @param sortBy         the field to sort by (nombre, poder, fechaCreacion, default: poder)
+     * @param sortDirection  the sort direction (ASC or DESC, default: DESC)
+     * @param searchTerm     optional search term for species name
+     * @param minPower       optional minimum power level filter
+     * @param maxPower       optional maximum power level filter
+     * @return ResponseEntity with paginated species and HTTP 200 (OK) status
+     */
+    @GetMapping("/list")
+    @Operation(
+            summary = "List species with pagination and filtering",
+            description = "Returns a paginated list of species with optional filtering by name and power level, and sorting capabilities."
+    )
+    @ApiResponse(responseCode = "200", description = "Paginated species list retrieved successfully")
+    public ResponseEntity<PaginatedSpecieResponse> listSpecies(
+            @Parameter(description = "Page number (0-indexed)")
+            @RequestParam(defaultValue = "0") Integer page,
+
+            @Parameter(description = "Page size (max 100)")
+            @RequestParam(defaultValue = "20") Integer size,
+
+            @Parameter(description = "Sort field (nombre, poder, fechaCreacion)")
+            @RequestParam(defaultValue = "poder") String sortBy,
+
+            @Parameter(description = "Sort direction (ASC or DESC)")
+            @RequestParam(defaultValue = "DESC") String sortDirection,
+
+            @Parameter(description = "Search term for species name")
+            @RequestParam(required = false) String searchTerm,
+
+            @Parameter(description = "Minimum power level")
+            @RequestParam(required = false) Integer minPower,
+
+            @Parameter(description = "Maximum power level")
+            @RequestParam(required = false) Integer maxPower
+    ) {
+        log.info("GET request to list species with filters: page={}, size={}, sortBy={}, searchTerm={}, minPower={}, maxPower={}",
+                page, size, sortBy, searchTerm, minPower, maxPower);
+
+        SpecieListQuery query = new SpecieListQuery(page, size, sortBy, sortDirection, searchTerm, minPower, maxPower);
+        PaginatedSpecieResponse response = especieService.listSpecies(query);
         return ResponseEntity.ok(response);
     }
 
@@ -116,4 +168,3 @@ public class EspecieController {
         return ResponseEntity.ok(response);
     }
 }
-

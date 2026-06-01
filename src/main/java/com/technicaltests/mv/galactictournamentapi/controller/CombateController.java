@@ -64,6 +64,27 @@ public class CombateController {
     }
 
     /**
+     * Retrieves a specific battle by ID.
+     *
+     * @param id the battle ID
+     * @return ResponseEntity with the battle and HTTP 200 (OK) status
+     */
+    @GetMapping("/{id}")
+    @Operation(
+            summary = "Retrieve a battle by ID",
+            description = "Returns detailed information about a specific battle"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Battle retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "Battle not found")
+    })
+    public ResponseEntity<Object> getBattleById(@PathVariable Long id) {
+        log.info("GET request to retrieve battle with ID: {}", id);
+        Object response = combateService.getBattleById(id);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
      * Adds a battle result manually without automatic winner determination.
      *
      * This endpoint allows explicitly specifying the winner without
