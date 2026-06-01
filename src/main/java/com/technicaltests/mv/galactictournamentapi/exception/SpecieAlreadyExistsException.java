@@ -30,4 +30,3 @@ public class SpecieAlreadyExistsException extends RuntimeException {
         super(message, cause);
     }
 }
-

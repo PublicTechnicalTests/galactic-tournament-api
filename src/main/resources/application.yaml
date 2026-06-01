@@ -1,4 +1,8 @@
 spring:
+#  autoconfigure:
+#    exclude:
+#      - org.springdoc.core.configuration.SpringDocQuerydslConfiguration
+
   application:
     name: galactic-tournament-api
     description: "Tournament management microservice for Galactic competitions"
@@ -18,10 +22,11 @@ spring:
       auto-commit: true
 
   # CORS Configuration (Explicit origins only)
+  # Note: CORS is also configured via CorsConfig bean for fine-grained control
   web:
     cors:
       allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:4200}
-      allowed-methods: GET,POST,PUT,DELETE,OPTIONS
+      allowed-methods: GET,POST,PUT,DELETE,OPTIONS,PATCH
       allowed-headers: "*"
       allow-credentials: true
       max-age: 3600
@@ -32,6 +37,12 @@ spring:
     include-binding-errors: always
     include-stacktrace: on-param
     include-exception: false
+
+#  # AI MCP Configuration - DISABLED to avoid QuerydslPredicateOperationCustomizer error
+#  ai:
+#    mcp:
+#      client:
+#        enabled: false
 
 # Server Configuration
 server:
@@ -69,21 +80,36 @@ logging:
 
 # OpenAPI/Swagger Configuration
 springdoc:
+
   api-docs:
-    path: /v3/api-docs
+    path: /api-docs
   swagger-ui:
     path: /swagger-ui.html
     enabled: true
     use-root-path: true
     operations-sorter: method
     tags-sorter: alpha
-  show-actuator: true
+  show-actuator: false
 
 # Application-specific Configuration
 app:
   name: "Galactic Tournament API"
   version: "@project.version@"
   description: "Tournament management microservice for Galactic competitions"
+
+  # API Key Configuration
+  # Formato: clave1,clave2,clave3 (separadas por comas)
+  # Estas claves se envían en el header: X-API-Key: <clave>
+  api-keys: ${API_KEYS:test-key-123,test-key-456,dev-api-key}
+
+  # CORS Configuration (Bean-based)
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:4200,http://localhost:5173}
+    allowed-methods: ${CORS_ALLOWED_METHODS:GET,POST,PUT,DELETE,OPTIONS,PATCH}
+    allowed-headers: ${CORS_ALLOWED_HEADERS:*}
+    max-age: ${CORS_MAX_AGE:3600}
+    allow-credentials: ${CORS_ALLOW_CREDENTIALS:true}
+
   validation:
     enabled: true
   pagination:
