@@ -1,0 +1,39 @@
+# Build and IDE files
+.vscode/
+.idea/
+*.iml
+*.class
+target/
+build/
+.gradle/
+*.log
+
+# Git
+.git/
+.gitignore
+
+# OS files
+.DS_Store
+.env.local
+Thumbs.db
+
+# Documentation (exclude docs folder)
+docs/
+
+# Test files
+src/test/
+*.test
+
+# Maven cache
+.m2/
+
+# IDE
+.project
+.settings/
+.classpath
+
+# Coverage
+coverage/
+.coverage
+jacoco.exec
+
