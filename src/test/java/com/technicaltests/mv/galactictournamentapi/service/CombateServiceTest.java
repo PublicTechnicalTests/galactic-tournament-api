@@ -73,7 +73,7 @@ class CombateServiceTest {
         savedCombate.setFechaCreacion(LocalDateTime.now());
 
         // Setup response
-        battleResponse = new BattleResponse(1L, 1L, 2L, 2L, "Klingon", 150, LocalDateTime.now());
+        battleResponse = new BattleResponse(1L, 1L, 2L, 2L, "Klingon", 150L, LocalDateTime.now());
     }
 
     @Test
@@ -114,7 +114,7 @@ class CombateServiceTest {
         equalPowerCombate.setIdCombate(2L);
         equalPowerCombate.setFechaCreacion(LocalDateTime.now());
 
-        BattleResponse equalPowerResponse = new BattleResponse(2L, 3L, 4L, 3L, "Andorian", 100, LocalDateTime.now());
+        BattleResponse equalPowerResponse = new BattleResponse(2L, 3L, 4L, 3L, "Andorian", 100L, LocalDateTime.now());
 
         when(especieService.getEspecieEntityById(3L)).thenReturn(specieA);
         when(especieService.getEspecieEntityById(4L)).thenReturn(specieB);
