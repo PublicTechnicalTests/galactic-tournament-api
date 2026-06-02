@@ -1,6 +1,7 @@
 package com.technicaltests.mv.galactictournamentapi.service;
 
 import com.technicaltests.mv.galactictournamentapi.dto.StartBattleRequest;
+import com.technicaltests.mv.galactictournamentapi.dto.AddBattleResultRequest;
 import com.technicaltests.mv.galactictournamentapi.dto.BattleResponse;
 import com.technicaltests.mv.galactictournamentapi.entity.Combate;
 import com.technicaltests.mv.galactictournamentapi.entity.Especie;
@@ -15,11 +16,11 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * Service layer for managing battles.
  *
- * Provides business logic operations for battle management including starting battles
- * and determining winners based on species power and name.
+ * Provides business logic operations for battle management including starting battles,
+ * adding battle results manually, and determining winners based on species power and name.
  *
  * @author Backend Team
- * @version 1.0
+ * @version 2.0
  * @since 2026
  */
 @Service
@@ -33,7 +34,7 @@ public class CombateService {
     private final EspecieService especieService;
 
     /**
-     * Starts a battle between two species.
+     * Starts a battle between two species with automatic winner determination.
      *
      * Battle logic:
      * 1. Compare power levels
@@ -55,7 +56,7 @@ public class CombateService {
         // Determine winner based on battle logic
         Especie ganador = determineWinner(contendiente1, contendiente2);
 
-        // Create battle entity
+        // Create and save battle
         Combate combate = new Combate(
                 request.idContendiente1(),
                 request.idContendiente2(),
@@ -66,6 +67,64 @@ public class CombateService {
         Combate savedCombate = combateRepository.save(combate);
 
         log.info("Battle {} completed. Winner: {} (ID: {})",
+                savedCombate.getIdCombate(),
+                ganador.getNombre(),
+                ganador.getIdEspecie());
+
+        return combateMapper.toResponse(savedCombate, ganador);
+    }
+
+    /**
+     * Adds a battle result manually without automatic winner determination.
+     *
+     * Validates that:
+     * 1. Both contenders exist
+     * 2. Winner is one of the contenders
+     * 3. Winner is not the same as one of the contenders twice
+     *
+     * @param request the add battle result request
+     * @return the battle response with the specified winner
+     * @throws SpecieNotFoundException if any species is not found
+     * @throws IllegalArgumentException if winner is not one of the contenders
+     */
+    public BattleResponse addBattleResult(AddBattleResultRequest request) {
+        log.info("Adding battle result between species {} and {} with winner {}",
+                request.idContendiente1(), request.idContendiente2(), request.idGanador());
+
+        // Validate that both contenders exist
+        Especie contendiente1 = especieService.getEspecieEntityById(request.idContendiente1());
+        Especie contendiente2 = especieService.getEspecieEntityById(request.idContendiente2());
+
+        // Validate that winner is one of the contenders
+        if (!request.idGanador().equals(request.idContendiente1()) &&
+            !request.idGanador().equals(request.idContendiente2())) {
+            log.warn("Invalid winner ID: {} (not one of the contenders)", request.idGanador());
+            throw new IllegalArgumentException(
+                    "Winner ID must be one of the contenders"
+            );
+        }
+
+        // Validate that contenders are different
+        if (request.idContendiente1().equals(request.idContendiente2())) {
+            log.warn("Contenders cannot be the same: {}", request.idContendiente1());
+            throw new IllegalArgumentException(
+                    "Contenders must be different species"
+            );
+        }
+
+        // Get winner species
+        Especie ganador = especieService.getEspecieEntityById(request.idGanador());
+
+        // Create and save battle
+        Combate combate = new Combate(
+                request.idContendiente1(),
+                request.idContendiente2(),
+                request.idGanador()
+        );
+
+        Combate savedCombate = combateRepository.save(combate);
+
+        log.info("Battle result {} added. Winner: {} (ID: {})",
                 savedCombate.getIdCombate(),
                 ganador.getNombre(),
                 ganador.getIdEspecie());

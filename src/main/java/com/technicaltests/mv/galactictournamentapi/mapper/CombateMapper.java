@@ -22,7 +22,7 @@ public class CombateMapper {
      * Converts a Combate entity to a BattleResponse DTO.
      *
      * @param combate the Combate entity
-     * @param ganador the winning Especie
+     * @param ganador the Especie entity representing the winner
      * @return the converted BattleResponse DTO
      */
     public BattleResponse toResponse(Combate combate, Especie ganador) {
@@ -32,9 +32,8 @@ public class CombateMapper {
                 combate.getIdContendiente2(),
                 combate.getIdGanador(),
                 ganador.getNombre(),
-                ganador.getPoder(),
+                ganador.getPoder().longValue(),
                 combate.getFechaCreacion()
         );
     }
 }
-

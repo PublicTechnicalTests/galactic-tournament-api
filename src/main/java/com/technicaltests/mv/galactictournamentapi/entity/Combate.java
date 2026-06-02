@@ -2,13 +2,12 @@ package com.technicaltests.mv.galactictournamentapi.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import org.hibernate.annotations.CreationTimestamp;
-
 import java.time.LocalDateTime;
 
 /**
- * Entity representing a Battle between two species.
+ * Entity representing a battle in the galactic tournament.
  *
+ * This entity records battles between two species and the winner.
  * This entity stores information about battles that occur in the galactic tournament.
  * Each battle has two contenders and a winner determined by their power levels.
  *
@@ -21,7 +20,8 @@ import java.time.LocalDateTime;
         name = "combates",
         indexes = {
                 @Index(name = "idx_id_ganador", columnList = "id_ganador"),
-                @Index(name = "idx_fecha_creacion", columnList = "fecha_creacion")
+                @Index(name = "idx_contendiente1", columnList = "id_contendiente_1"),
+                @Index(name = "idx_contendiente2", columnList = "id_contendiente_2")
         }
 )
 public class Combate {
@@ -35,30 +35,29 @@ public class Combate {
     private Long idCombate;
 
     /**
-     * ID of the first contender species.
+     * ID of the first contender (species).
      */
-    @NotNull(message = "First contender must not be null")
+    @NotNull(message = "First contender ID must not be null")
     @Column(name = "id_contendiente_1", nullable = false)
     private Long idContendiente1;
 
     /**
-     * ID of the second contender species.
+     * ID of the second contender (species).
      */
-    @NotNull(message = "Second contender must not be null")
+    @NotNull(message = "Second contender ID must not be null")
     @Column(name = "id_contendiente_2", nullable = false)
     private Long idContendiente2;
 
     /**
-     * ID of the winner species.
+     * ID of the winning species.
      */
-    @NotNull(message = "Winner must not be null")
+    @NotNull(message = "Winner ID must not be null")
     @Column(name = "id_ganador", nullable = false)
     private Long idGanador;
 
     /**
-     * Creation timestamp. Automatically set when the battle is created.
+     * Timestamp of battle creation.
      */
-    @CreationTimestamp
     @Column(name = "fecha_creacion", nullable = false, updatable = false)
     private LocalDateTime fechaCreacion;
 
@@ -71,16 +70,29 @@ public class Combate {
     }
 
     /**
-     * Constructor with all required fields.
+     * Constructor with contenders and winner.
      *
-     * @param idContendiente1 ID of first contender
-     * @param idContendiente2 ID of second contender
-     * @param idGanador       ID of winner
+     * @param idContendiente1 first contender species ID
+     * @param idContendiente2 second contender species ID
+     * @param idGanador winner species ID
      */
     public Combate(Long idContendiente1, Long idContendiente2, Long idGanador) {
         this.idContendiente1 = idContendiente1;
         this.idContendiente2 = idContendiente2;
         this.idGanador = idGanador;
+        this.fechaCreacion = LocalDateTime.now();
+    }
+
+    // Lifecycle callbacks
+
+    /**
+     * Set creation date before persisting.
+     */
+    @PrePersist
+    protected void onCreate() {
+        if (this.fechaCreacion == null) {
+            this.fechaCreacion = LocalDateTime.now();
+        }
     }
 
     // Getters and Setters
@@ -106,7 +118,7 @@ public class Combate {
     /**
      * Gets the first contender ID.
      *
-     * @return the contender ID
+     * @return the first contender species ID
      */
     public Long getIdContendiente1() {
         return idContendiente1;
@@ -115,7 +127,7 @@ public class Combate {
     /**
      * Sets the first contender ID.
      *
-     * @param idContendiente1 the contender ID to set
+     * @param idContendiente1 the first contender species ID
      */
     public void setIdContendiente1(Long idContendiente1) {
         this.idContendiente1 = idContendiente1;
@@ -124,7 +136,7 @@ public class Combate {
     /**
      * Gets the second contender ID.
      *
-     * @return the contender ID
+     * @return the second contender species ID
      */
     public Long getIdContendiente2() {
         return idContendiente2;
@@ -133,7 +145,7 @@ public class Combate {
     /**
      * Sets the second contender ID.
      *
-     * @param idContendiente2 the contender ID to set
+     * @param idContendiente2 the second contender species ID
      */
     public void setIdContendiente2(Long idContendiente2) {
         this.idContendiente2 = idContendiente2;
@@ -151,6 +163,7 @@ public class Combate {
     /**
      * Sets the winner ID.
      *
+     * @param idGanador the winner species ID
      * @param idGanador the winner species ID to set
      */
     public void setIdGanador(Long idGanador) {

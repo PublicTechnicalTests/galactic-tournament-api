@@ -30,10 +30,10 @@ public interface CombateRepository extends JpaRepository<Combate, Long> {
     List<Combate> findByIdGanador(Long idGanador);
 
     /**
-     * Counts battles won by a specific species.
+     * Counts the number of battles won by a specific species.
      *
      * @param idGanador the winner species ID
-     * @return count of battles won
+     * @return count of battles won by this species
      */
     long countByIdGanador(Long idGanador);
 
@@ -48,5 +48,15 @@ public interface CombateRepository extends JpaRepository<Combate, Long> {
             "(c.idContendiente1 = :id1 AND c.idContendiente2 = :id2) OR " +
             "(c.idContendiente1 = :id2 AND c.idContendiente2 = :id1)")
     List<Combate> findBattlesBetweenSpecies(@Param("id1") Long id1, @Param("id2") Long id2);
+
+
+    /**
+     * Finds all battles where a species was a contender (either winning or losing).
+     *
+     * @param idEspecie the species ID
+     * @return list of battles where this species participated
+     */
+    @Query("SELECT c FROM Combate c WHERE c.idContendiente1 = :idEspecie OR c.idContendiente2 = :idEspecie")
+    List<Combate> findBattlesBySpecieId(@Param("idEspecie") Long idEspecie);
 }
 

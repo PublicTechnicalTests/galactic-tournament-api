@@ -1,6 +1,7 @@
 package com.technicaltests.mv.galactictournamentapi.controller;
 
 import com.technicaltests.mv.galactictournamentapi.dto.StartBattleRequest;
+import com.technicaltests.mv.galactictournamentapi.dto.AddBattleResultRequest;
 import com.technicaltests.mv.galactictournamentapi.dto.BattleResponse;
 import com.technicaltests.mv.galactictournamentapi.service.CombateService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -17,11 +18,11 @@ import org.springframework.web.bind.annotation.*;
 /**
  * REST Controller for managing battles in the galactic tournament.
  *
- * Provides endpoints for starting battles between species.
+ * Provides endpoints for starting battles and adding battle results.
  * All endpoints include comprehensive API documentation via Swagger/OpenAPI.
  *
  * @author Backend Team
- * @version 1.0
+ * @version 2.0
  * @since 2026
  */
 @RestController
@@ -34,7 +35,7 @@ public class CombateController {
     private final CombateService combateService;
 
     /**
-     * Starts a battle between two species.
+     * Starts a battle between two species with automatic winner determination.
      *
      * The winner is determined by:
      * 1. Higher power level wins
@@ -46,11 +47,11 @@ public class CombateController {
     @PostMapping
     @Operation(
             summary = "Start a battle between two species",
-            description = "Initiates a battle between two species. Winner is determined by power level, " +
-                    "or alphabetically if power is equal. The battle result and winner information are returned."
+            description = "Initiates a battle between two species with automatic winner determination. " +
+                    "Winner is determined by power level, or alphabetically if power is equal."
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Battle started and completed successfully"),
+            @ApiResponse(responseCode = "201", description = "Battle started successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid request body"),
             @ApiResponse(responseCode = "404", description = "One or both species not found")
     })
@@ -82,5 +83,35 @@ public class CombateController {
         Object response = combateService.getBattleById(id);
         return ResponseEntity.ok(response);
     }
+
+    /**
+     * Adds a battle result manually without automatic winner determination.
+     *
+     * This endpoint allows explicitly specifying the winner without
+     * using the automatic power-based winner determination.
+     *
+     * @param request the add battle result request with contender IDs and winner
+     * @return ResponseEntity with battle result and HTTP 201 (Created) status
+     */
+    @PostMapping("/result")
+    @Operation(
+            summary = "Add a battle result manually",
+            description = "Adds a battle result with explicitly specified winner. " +
+                    "Winner must be one of the contenders. No automatic winner determination is used."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Battle result added successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid request (winner not one of contenders)"),
+            @ApiResponse(responseCode = "404", description = "One or more species not found")
+    })
+    public ResponseEntity<BattleResponse> addBattleResult(@Valid @RequestBody AddBattleResultRequest request) {
+        log.info("POST request to add battle result: {} vs {}, winner: {}",
+                request.idContendiente1(), request.idContendiente2(), request.idGanador());
+
+        BattleResponse response = combateService.addBattleResult(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+
 }
 
