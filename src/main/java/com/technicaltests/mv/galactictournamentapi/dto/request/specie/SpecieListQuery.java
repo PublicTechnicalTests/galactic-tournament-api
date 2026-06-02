@@ -1,4 +1,4 @@
-package com.technicaltests.mv.galactictournamentapi.dto;
+package com.technicaltests.mv.galactictournamentapi.dto.request.specie;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -12,7 +12,7 @@ import jakarta.validation.constraints.Min;
  *
  * @param page           the page number (0-indexed, default 0)
  * @param size           the page size (default 20, max 100)
- * @param sortBy         the field to sort by (nombre, poder, fechaCreacion)
+ * @param sortBy         the field to sort by (name, power, creationDate)
  * @param sortDirection  the sort direction (ASC or DESC)
  * @param searchTerm     optional search term for species name
  * @param minPower       optional minimum power level filter
@@ -36,7 +36,7 @@ public record SpecieListQuery(
         Integer size,
 
         @JsonProperty("sort_by")
-        @Schema(description = "Sort field (nombre, poder, fechaCreacion)", example = "poder")
+        @Schema(description = "Sort field (name, power, creationDate)", example = "power")
         String sortBy,
 
         @JsonProperty("sort_direction")
@@ -66,7 +66,7 @@ public record SpecieListQuery(
         return new SpecieListQuery(
                 page != null ? page : 0,
                 size != null ? size : 20,
-                sortBy != null ? sortBy : "poder",
+                sortBy != null ? sortBy : "power",
                 sortDirection != null ? sortDirection : "DESC",
                 searchTerm,
                 minPower,

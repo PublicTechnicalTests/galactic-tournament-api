@@ -1,6 +1,6 @@
 package com.technicaltests.mv.galactictournamentapi.specification;
 
-import com.technicaltests.mv.galactictournamentapi.entity.Especie;
+import com.technicaltests.mv.galactictournamentapi.entity.Specie;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -9,7 +9,7 @@ import java.util.List;
 
 /**
  * JPA Specification for building dynamic queries on Especie entity.
- *
+ * <p>
  * Provides fluent API for constructing complex WHERE clauses with filters.
  *
  * @author Backend Team
@@ -30,15 +30,15 @@ public class EspecieSpecification {
      * @param maxPower   optional maximum power level (inclusive)
      * @return a Specification that can be used with QueryDSL or Spring Data JPA
      */
-    public static Specification<Especie> filterBy(String searchTerm, Integer minPower, Integer maxPower) {
+    public static Specification<Specie> filterBy(String searchTerm, Integer minPower, Integer maxPower) {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
 
-            // Search term filter (case-insensitive like on nombre)
+            // Search term filter (case-insensitive like on name)
             if (searchTerm != null && !searchTerm.isBlank()) {
                 predicates.add(
                         criteriaBuilder.like(
-                                criteriaBuilder.lower(root.get("nombre")),
+                                criteriaBuilder.lower(root.get("name")),
                                 "%" + searchTerm.toLowerCase() + "%"
                         )
                 );
@@ -47,14 +47,14 @@ public class EspecieSpecification {
             // Minimum power filter
             if (minPower != null) {
                 predicates.add(
-                        criteriaBuilder.greaterThanOrEqualTo(root.get("poder"), minPower)
+                        criteriaBuilder.greaterThanOrEqualTo(root.get("power"), minPower)
                 );
             }
 
             // Maximum power filter
             if (maxPower != null) {
                 predicates.add(
-                        criteriaBuilder.lessThanOrEqualTo(root.get("poder"), maxPower)
+                        criteriaBuilder.lessThanOrEqualTo(root.get("power"), maxPower)
                 );
             }
 

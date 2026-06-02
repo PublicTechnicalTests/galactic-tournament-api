@@ -1,14 +1,14 @@
 package com.technicaltests.mv.galactictournamentapi.service;
 
-import com.technicaltests.mv.galactictournamentapi.dto.CreateSpecieRequest;
-import com.technicaltests.mv.galactictournamentapi.dto.PaginatedSpecieResponse;
-import com.technicaltests.mv.galactictournamentapi.dto.SpecieListQuery;
-import com.technicaltests.mv.galactictournamentapi.dto.SpecieResponse;
-import com.technicaltests.mv.galactictournamentapi.entity.Especie;
+import com.technicaltests.mv.galactictournamentapi.dto.request.specie.CreateSpecieRequest;
+import com.technicaltests.mv.galactictournamentapi.dto.request.specie.PaginatedSpecieResponse;
+import com.technicaltests.mv.galactictournamentapi.dto.request.specie.SpecieListQuery;
+import com.technicaltests.mv.galactictournamentapi.dto.response.specie.SpecieResponse;
+import com.technicaltests.mv.galactictournamentapi.entity.Specie;
 import com.technicaltests.mv.galactictournamentapi.exception.SpecieAlreadyExistsException;
 import com.technicaltests.mv.galactictournamentapi.exception.SpecieNotFoundException;
-import com.technicaltests.mv.galactictournamentapi.mapper.EspecieMapper;
-import com.technicaltests.mv.galactictournamentapi.repository.EspecieRepository;
+import com.technicaltests.mv.galactictournamentapi.mapper.SpecieMapper;
+import com.technicaltests.mv.galactictournamentapi.repository.SpecieRepository;
 import com.technicaltests.mv.galactictournamentapi.specification.EspecieSpecification;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +23,7 @@ import java.util.List;
 
 /**
  * Service layer for managing species.
- *
+ * <p>
  * Provides business logic operations for species management including creation, retrieval,
  * and validation. Implements transactional operations and logging for audit purposes.
  *
@@ -35,39 +35,40 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 @Transactional
-public class EspecieService {
+public class SpecieServiceImpl implements SpecieService {
 
-    private final EspecieRepository especieRepository;
-    private final EspecieMapper especieMapper;
+    private final SpecieRepository specieRepository;
+    private final SpecieMapper specieMapper;
 
     private static final int MAX_PAGE_SIZE = 100;
 
     /**
      * Creates a new species in the tournament.
-     *
+     * <p>
      * Validates that the species name is unique before persisting.
      *
      * @param request the create species request containing species details
      * @return the created species as a SpecieResponse
      * @throws SpecieAlreadyExistsException if a species with the same name already exists
      */
+    @Override
     public SpecieResponse createSpecie(CreateSpecieRequest request) {
-        log.info("Creating new species: {}", request.nombre());
+        log.info("Creating new species: {}", request.name());
 
         // Validate that the species name doesn't already exist
-        if (especieRepository.existsByNombre(request.nombre())) {
-            log.warn("Attempt to create duplicate species: {}", request.nombre());
+        if (specieRepository.existsByName(request.name())) {
+            log.warn("Attempt to create duplicate species: {}", request.name());
             throw new SpecieAlreadyExistsException(
-                    "A species with the name '" + request.nombre() + "' already exists"
+                    "A species with the name '" + request.name() + "' already exists"
             );
         }
 
         // Convert DTO to entity and save
-        Especie especie = especieMapper.toEntity(request);
-        Especie savedEspecie = especieRepository.save(especie);
+        Specie specie = specieMapper.toEntity(request);
+        Specie savedSpecie = specieRepository.save(specie);
 
-        log.info("Species created successfully with ID: {}", savedEspecie.getIdEspecie());
-        return especieMapper.toResponse(savedEspecie);
+        log.info("Species created successfully with ID: {}", savedSpecie.getSpecieId());
+        return specieMapper.toResponse(savedSpecie);
     }
 
     /**
@@ -78,16 +79,17 @@ public class EspecieService {
      * @throws SpecieNotFoundException if the species is not found
      */
     @Transactional(readOnly = true)
+    @Override
     public SpecieResponse getSpecieById(Long id) {
         log.info("Retrieving species with ID: {}", id);
 
-        Especie especie = especieRepository.findById(id)
+        Specie specie = specieRepository.findById(id)
                 .orElseThrow(() -> {
                     log.warn("Species not found with ID: {}", id);
                     return new SpecieNotFoundException("Species not found with ID: " + id);
                 });
 
-        return especieMapper.toResponse(especie);
+        return specieMapper.toResponse(specie);
     }
 
     /**
@@ -98,16 +100,17 @@ public class EspecieService {
      * @throws SpecieNotFoundException if the species is not found
      */
     @Transactional(readOnly = true)
+    @Override
     public SpecieResponse getSpecieByNombre(String nombre) {
         log.info("Retrieving species with name: {}", nombre);
 
-        Especie especie = especieRepository.findByNombre(nombre)
+        Specie specie = specieRepository.findByName(nombre)
                 .orElseThrow(() -> {
                     log.warn("Species not found with name: {}", nombre);
                     return new SpecieNotFoundException("Species not found with name: " + nombre);
                 });
 
-        return especieMapper.toResponse(especie);
+        return specieMapper.toResponse(specie);
     }
 
     /**
@@ -116,12 +119,13 @@ public class EspecieService {
      * @return a list of all species as SpecieResponse objects
      */
     @Transactional(readOnly = true)
+    @Override
     public List<SpecieResponse> getAllSpecies() {
         log.info("Retrieving all species");
-        List<Especie> especies = especieRepository.findAll();
+        List<Specie> especies = specieRepository.findAll();
         log.info("Found {} species", especies.size());
         return especies.stream()
-                .map(especieMapper::toResponse)
+                .map(specieMapper::toResponse)
                 .toList();
     }
 
@@ -132,6 +136,7 @@ public class EspecieService {
      * @return a paginated response with species data
      */
     @Transactional(readOnly = true)
+    @Override
     public PaginatedSpecieResponse listSpecies(SpecieListQuery query) {
         log.info("Listing species with query: page={}, size={}, sortBy={}, searchTerm={}",
                 query.page(), query.size(), query.sortBy(), query.searchTerm());
@@ -159,11 +164,11 @@ public class EspecieService {
         );
 
         // Fetch paginated results
-        Page<Especie> page = especieRepository.findAll(spec, pageable);
+        Page<Specie> page = specieRepository.findAll(spec, pageable);
 
         // Convert to response
         List<SpecieResponse> content = page.getContent().stream()
-                .map(especieMapper::toResponse)
+                .map(specieMapper::toResponse)
                 .toList();
 
         log.info("Retrieved {} species from page {}", content.size(), normalizedQuery.page());
@@ -186,8 +191,9 @@ public class EspecieService {
      * @return true if the species exists, false otherwise
      */
     @Transactional(readOnly = true)
+    @Override
     public boolean existsById(Long id) {
-        return especieRepository.existsById(id);
+        return specieRepository.existsById(id);
     }
 
     /**
@@ -198,8 +204,9 @@ public class EspecieService {
      * @throws SpecieNotFoundException if the species is not found
      */
     @Transactional(readOnly = true)
-    public Especie getEspecieEntityById(Long id) {
-        return especieRepository.findById(id)
+    @Override
+    public Specie getEspecieEntityById(Long id) {
+        return specieRepository.findById(id)
                 .orElseThrow(() -> new SpecieNotFoundException("Species not found with ID: " + id));
     }
 }

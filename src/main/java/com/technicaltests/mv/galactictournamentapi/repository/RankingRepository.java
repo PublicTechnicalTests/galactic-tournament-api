@@ -3,7 +3,6 @@ package com.technicaltests.mv.galactictournamentapi.repository;
 import com.technicaltests.mv.galactictournamentapi.entity.Ranking;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -25,25 +24,25 @@ public interface RankingRepository extends JpaRepository<Ranking, Long> {
     /**
      * Finds a ranking by species ID.
      *
-     * @param idEspecie the species ID
+     * @param SpecieId the species ID
      * @return an Optional containing the ranking if found
      */
-    Optional<Ranking> findByIdEspecie(Long idEspecie);
+    Optional<Ranking> findBySpecieId(Long SpecieId);
 
     /**
      * Checks if a ranking exists for a species.
      *
-     * @param idEspecie the species ID
+     * @param SpecieId the species ID
      * @return true if a ranking exists for this species
      */
-    boolean existsByIdEspecie(Long idEspecie);
+    boolean existsBySpecieId(Long SpecieId);
 
     /**
      * Finds all rankings ordered by victories in descending order.
      *
      * @return list of all rankings sorted by victories (highest first)
      */
-    @Query("SELECT r FROM Ranking r ORDER BY r.victorias DESC")
-    List<Ranking> findAllOrderByVictorias();
+    @Query("SELECT r FROM Ranking r ORDER BY r.victories DESC")
+    List<Ranking> findAllOrderByVictories();
 }
 

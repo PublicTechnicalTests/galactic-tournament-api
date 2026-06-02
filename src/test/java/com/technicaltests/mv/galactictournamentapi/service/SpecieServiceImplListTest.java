@@ -1,10 +1,10 @@
 package com.technicaltests.mv.galactictournamentapi.service;
 
-import com.technicaltests.mv.galactictournamentapi.dto.PaginatedSpecieResponse;
-import com.technicaltests.mv.galactictournamentapi.dto.SpecieListQuery;
-import com.technicaltests.mv.galactictournamentapi.entity.Especie;
-import com.technicaltests.mv.galactictournamentapi.mapper.EspecieMapper;
-import com.technicaltests.mv.galactictournamentapi.repository.EspecieRepository;
+import com.technicaltests.mv.galactictournamentapi.dto.request.specie.PaginatedSpecieResponse;
+import com.technicaltests.mv.galactictournamentapi.dto.request.specie.SpecieListQuery;
+import com.technicaltests.mv.galactictournamentapi.entity.Specie;
+import com.technicaltests.mv.galactictournamentapi.mapper.SpecieMapper;
+import com.technicaltests.mv.galactictournamentapi.repository.SpecieRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -40,111 +40,111 @@ import static org.mockito.Mockito.when;
  */
 @ExtendWith(MockitoExtension.class)
 @DisplayName("EspecieService List Functionality Tests")
-class EspecieServiceListTest {
+class SpecieServiceImplListTest {
 
     @Mock
-    private EspecieRepository especieRepository;
+    private SpecieRepository specieRepository;
 
     @Mock
-    private EspecieMapper especieMapper;
+    private SpecieMapper specieMapper;
 
     @InjectMocks
-    private EspecieService especieService;
+    private SpecieService specieService;
 
     @Captor
     private ArgumentCaptor<Pageable> pageableCaptor;
 
-    private Especie testEspecie1;
-    private Especie testEspecie2;
+    private Specie testSpecie1;
+    private Specie testSpecie2;
     private SpecieListQuery testQuery;
 
     @BeforeEach
     void setUp() {
-        testEspecie1 = new Especie("Vulcan", 100, "Mind meditation");
-        testEspecie1.setIdEspecie(1L);
-        testEspecie1.setFechaCreacion(LocalDateTime.now());
+        testSpecie1 = new Specie("Vulcan", 100, "Mind meditation");
+        testSpecie1.setSpecieId(1L);
+        testSpecie1.setCreationDate(LocalDateTime.now());
 
-        testEspecie2 = new Especie("Klingon", 150, "Warrior strength");
-        testEspecie2.setIdEspecie(2L);
-        testEspecie2.setFechaCreacion(LocalDateTime.now());
+        testSpecie2 = new Specie("Klingon", 150, "Warrior strength");
+        testSpecie2.setSpecieId(2L);
+        testSpecie2.setCreationDate(LocalDateTime.now());
 
-        testQuery = new SpecieListQuery(0, 20, "poder", "DESC", null, null, null);
+        testQuery = new SpecieListQuery(0, 20, "power", "DESC", null, null, null);
     }
 
     @Test
     @DisplayName("Should list species with default pagination")
     void testListSpeciesWithDefaults() {
         // Arrange
-        List<Especie> species = List.of(testEspecie1, testEspecie2);
-        Page<Especie> page = new PageImpl<>(species);
+        List<Specie> species = List.of(testSpecie1, testSpecie2);
+        Page<Specie> page = new PageImpl<>(species);
 
-        when(especieRepository.findAll(any(Specification.class), any(Pageable.class)))
+        when(specieRepository.findAll(any(Specification.class), any(Pageable.class)))
                 .thenReturn(page);
 
         // Act
-        PaginatedSpecieResponse result = especieService.listSpecies(testQuery);
+        PaginatedSpecieResponse result = specieService.listSpecies(testQuery);
 
         // Assert
         assertThat(result).isNotNull();
         assertThat(result.content()).hasSize(2);
         assertThat(result.totalElements()).isEqualTo(2);
-        verify(especieRepository).findAll(any(Specification.class), any(Pageable.class));
+        verify(specieRepository).findAll(any(Specification.class), any(Pageable.class));
     }
 
     @Test
     @DisplayName("Should apply search filter correctly")
     void testListSpeciesWithSearchFilter() {
         // Arrange
-        SpecieListQuery queryWithSearch = new SpecieListQuery(0, 20, "poder", "DESC", "Vulcan", null, null);
-        List<Especie> filteredSpecies = List.of(testEspecie1);
-        Page<Especie> page = new PageImpl<>(filteredSpecies);
+        SpecieListQuery queryWithSearch = new SpecieListQuery(0, 20, "power", "DESC", "Vulcan", null, null);
+        List<Specie> filteredSpecies = List.of(testSpecie1);
+        Page<Specie> page = new PageImpl<>(filteredSpecies);
 
-        when(especieRepository.findAll(any(Specification.class), any(Pageable.class)))
+        when(specieRepository.findAll(any(Specification.class), any(Pageable.class)))
                 .thenReturn(page);
 
         // Act
-        PaginatedSpecieResponse result = especieService.listSpecies(queryWithSearch);
+        PaginatedSpecieResponse result = specieService.listSpecies(queryWithSearch);
 
         // Assert
         assertThat(result.content()).hasSize(1);
-        verify(especieRepository).findAll(any(Specification.class), any(Pageable.class));
+        verify(specieRepository).findAll(any(Specification.class), any(Pageable.class));
     }
 
     @Test
     @DisplayName("Should apply power range filters")
     void testListSpeciesWithPowerFilter() {
         // Arrange
-        SpecieListQuery queryWithPowerFilter = new SpecieListQuery(0, 20, "poder", "DESC", null, 100, 200);
-        List<Especie> filteredSpecies = List.of(testEspecie2);
-        Page<Especie> page = new PageImpl<>(filteredSpecies);
+        SpecieListQuery queryWithPowerFilter = new SpecieListQuery(0, 20, "power", "DESC", null, 100, 200);
+        List<Specie> filteredSpecies = List.of(testSpecie2);
+        Page<Specie> page = new PageImpl<>(filteredSpecies);
 
-        when(especieRepository.findAll(any(Specification.class), any(Pageable.class)))
+        when(specieRepository.findAll(any(Specification.class), any(Pageable.class)))
                 .thenReturn(page);
 
         // Act
-        PaginatedSpecieResponse result = especieService.listSpecies(queryWithPowerFilter);
+        PaginatedSpecieResponse result = specieService.listSpecies(queryWithPowerFilter);
 
         // Assert
         assertThat(result.content()).hasSize(1);
-        verify(especieRepository).findAll(any(Specification.class), any(Pageable.class));
+        verify(specieRepository).findAll(any(Specification.class), any(Pageable.class));
     }
 
     @Test
     @DisplayName("Should enforce maximum page size")
     void testMaximumPageSizeEnforcement() {
         // Arrange
-        SpecieListQuery queryWithLargePageSize = new SpecieListQuery(0, 500, "poder", "DESC", null, null, null);
-        List<Especie> species = List.of(testEspecie1);
-        Page<Especie> page = new PageImpl<>(species);
+        SpecieListQuery queryWithLargePageSize = new SpecieListQuery(0, 500, "power", "DESC", null, null, null);
+        List<Specie> species = List.of(testSpecie1);
+        Page<Specie> page = new PageImpl<>(species);
 
-        when(especieRepository.findAll(any(Specification.class), any(Pageable.class)))
+        when(specieRepository.findAll(any(Specification.class), any(Pageable.class)))
                 .thenReturn(page);
 
         // Act
-        PaginatedSpecieResponse result = especieService.listSpecies(queryWithLargePageSize);
+        PaginatedSpecieResponse result = specieService.listSpecies(queryWithLargePageSize);
 
         // Assert
-        verify(especieRepository).findAll(any(Specification.class), pageableCaptor.capture());
+        verify(specieRepository).findAll(any(Specification.class), pageableCaptor.capture());
         Pageable capturedPageable = pageableCaptor.getValue();
         assertThat(capturedPageable.getPageSize()).isLessThanOrEqualTo(100);
     }
@@ -153,12 +153,12 @@ class EspecieServiceListTest {
     @DisplayName("Should handle empty results")
     void testListSpeciesEmptyResults() {
         // Arrange
-        Page<Especie> emptyPage = new PageImpl<>(List.of());
-        when(especieRepository.findAll(any(Specification.class), any(Pageable.class)))
+        Page<Specie> emptyPage = new PageImpl<>(List.of());
+        when(specieRepository.findAll(any(Specification.class), any(Pageable.class)))
                 .thenReturn(emptyPage);
 
         // Act
-        PaginatedSpecieResponse result = especieService.listSpecies(testQuery);
+        PaginatedSpecieResponse result = specieService.listSpecies(testQuery);
 
         // Assert
         assertThat(result.content()).isEmpty();
@@ -171,14 +171,14 @@ class EspecieServiceListTest {
     @DisplayName("Should calculate pagination metadata correctly")
     void testPaginationMetadata() {
         // Arrange
-        List<Especie> species = List.of(testEspecie1, testEspecie2);
-        Page<Especie> page = new PageImpl<>(species, PageRequest.of(0, 2), 5);
+        List<Specie> species = List.of(testSpecie1, testSpecie2);
+        Page<Specie> page = new PageImpl<>(species, PageRequest.of(0, 2), 5);
 
-        when(especieRepository.findAll(any(Specification.class), any(Pageable.class)))
+        when(specieRepository.findAll(any(Specification.class), any(Pageable.class)))
                 .thenReturn(page);
 
         // Act
-        PaginatedSpecieResponse result = especieService.listSpecies(testQuery);
+        PaginatedSpecieResponse result = specieService.listSpecies(testQuery);
 
         // Assert
         assertThat(result.currentPage()).isZero();

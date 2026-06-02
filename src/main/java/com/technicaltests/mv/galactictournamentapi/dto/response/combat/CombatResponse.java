@@ -1,4 +1,4 @@
-package com.technicaltests.mv.galactictournamentapi.dto;
+package com.technicaltests.mv.galactictournamentapi.dto.response.combat;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -24,7 +24,7 @@ import java.time.LocalDateTime;
  * @since 2026
  */
 @Schema(description = "DTO for battle response")
-public record BattleResponse(
+public record CombatResponse(
 
         @JsonProperty("id_combate")
         @Schema(description = "Battle ID", example = "1")
@@ -48,11 +48,12 @@ public record BattleResponse(
 
         @JsonProperty("poder_ganador")
         @Schema(description = "Power level of the winning species", example = "100")
-        Long poderGanador,
-
-        @JsonProperty("fecha_creacion")
-        @Schema(description = "Battle creation timestamp", example = "2026-06-01T10:00:00")
-        LocalDateTime fechaCreacion
+        Long poderGanador
+//        ,
+//
+//        @JsonProperty("fecha_creacion")
+//        @Schema(description = "Battle creation timestamp", example = "2026-06-01T10:00:00")
+//        LocalDateTime fechaCreacion
 
 ) {
 }

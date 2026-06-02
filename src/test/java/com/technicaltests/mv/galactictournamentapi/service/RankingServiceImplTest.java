@@ -1,9 +1,9 @@
 package com.technicaltests.mv.galactictournamentapi.service;
 
-import com.technicaltests.mv.galactictournamentapi.dto.CreateRankingRequest;
-import com.technicaltests.mv.galactictournamentapi.dto.RankingResponse;
+import com.technicaltests.mv.galactictournamentapi.dto.request.ranking.CreateRankingRequest;
+import com.technicaltests.mv.galactictournamentapi.dto.response.ranking.RankingResponse;
 import com.technicaltests.mv.galactictournamentapi.entity.Ranking;
-import com.technicaltests.mv.galactictournamentapi.entity.Especie;
+import com.technicaltests.mv.galactictournamentapi.entity.Specie;
 import com.technicaltests.mv.galactictournamentapi.mapper.RankingMapper;
 import com.technicaltests.mv.galactictournamentapi.repository.RankingRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,7 +32,7 @@ import static org.mockito.Mockito.*;
  */
 @ExtendWith(MockitoExtension.class)
 @DisplayName("RankingService Unit Tests")
-class RankingServiceTest {
+class RankingServiceImplTest {
 
     @Mock
     private RankingRepository rankingRepository;
@@ -41,12 +41,12 @@ class RankingServiceTest {
     private RankingMapper rankingMapper;
 
     @Mock
-    private EspecieService especieService;
+    private SpecieService specieService;
 
     @InjectMocks
-    private RankingService rankingService;
+    private RankingServiceImpl rankingServiceImpl;
 
-    private Especie especieVulcan;
+    private Specie specieVulcan;
     private CreateRankingRequest createRequest;
     private Ranking newRanking;
     private RankingResponse rankingResponse;
@@ -54,16 +54,21 @@ class RankingServiceTest {
     @BeforeEach
     void setUp() {
         // Setup Vulcan
-        especieVulcan = new Especie("Vulcan", 100, "Mind meditation");
-        especieVulcan.setIdEspecie(1L);
-        especieVulcan.setFechaCreacion(LocalDateTime.now());
+        specieVulcan =
+                Specie.builder()
+                        .name("Vulcan")
+                        .power(100)
+                        .ability("Mind meditation")
+                        .build();
+        specieVulcan.setSpecieId(1L);
+        specieVulcan.setCreationDate(LocalDateTime.now());
 
         // Setup request
         createRequest = new CreateRankingRequest(1L);
 
         // Setup new ranking
-        newRanking = new Ranking(1L);
-        newRanking.setIdRanking(1L);
+        newRanking = Ranking.builder().rankingId(1L).build();
+        newRanking.setRankingId(1L);
 
         // Setup response
         rankingResponse = new RankingResponse(1L, 1L, "Vulcan", 0L);
@@ -73,13 +78,13 @@ class RankingServiceTest {
     @DisplayName("Should create ranking for species")
     void testCreateRanking() {
         // Arrange
-        when(especieService.getEspecieEntityById(1L)).thenReturn(especieVulcan);
-        when(rankingRepository.existsByIdEspecie(1L)).thenReturn(false);
+        when(specieService.getEspecieEntityById(1L)).thenReturn(specieVulcan);
+        when(rankingRepository.existsBySpecieId(1L)).thenReturn(false);
         when(rankingRepository.save(any(Ranking.class))).thenReturn(newRanking);
-        when(rankingMapper.toResponse(newRanking, especieVulcan)).thenReturn(rankingResponse);
+        when(rankingMapper.toResponse(newRanking, specieVulcan)).thenReturn(rankingResponse);
 
         // Act
-        RankingResponse result = rankingService.createRanking(createRequest);
+        RankingResponse result = rankingServiceImpl.createRanking(createRequest);
 
         // Assert
         assertThat(result).isNotNull();
@@ -92,11 +97,11 @@ class RankingServiceTest {
     @DisplayName("Should throw exception when ranking already exists")
     void testCreateRankingAlreadyExists() {
         // Arrange
-        when(especieService.getEspecieEntityById(1L)).thenReturn(especieVulcan);
-        when(rankingRepository.existsByIdEspecie(1L)).thenReturn(true);
+        when(specieService.getEspecieEntityById(1L)).thenReturn(specieVulcan);
+        when(rankingRepository.existsBySpecieId(1L)).thenReturn(true);
 
         // Act & Assert
-        assertThatThrownBy(() -> rankingService.createRanking(createRequest))
+        assertThatThrownBy(() -> rankingServiceImpl.createRanking(createRequest))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("Ranking already exists");
 
@@ -107,21 +112,28 @@ class RankingServiceTest {
     @DisplayName("Should add victory to ranking")
     void testAddVictory() {
         // Arrange
-        Ranking existingRanking = new Ranking(1L, 5L);
-        existingRanking.setIdRanking(1L);
+        Ranking existingRanking =
+                Ranking.builder()
+                        .rankingId(1L)
+                        .specieId(5L)
+                        .build();
+        existingRanking.setRankingId(1L);
 
-        Ranking updatedRanking = new Ranking(1L, 6L);
-        updatedRanking.setIdRanking(1L);
+        Ranking updatedRanking =                 Ranking.builder()
+                .rankingId(1L)
+                .specieId(6L)
+                .build();
+        updatedRanking.setRankingId(1L);
 
         RankingResponse updatedResponse = new RankingResponse(1L, 1L, "Vulcan", 6L);
 
-        when(rankingRepository.findByIdEspecie(1L)).thenReturn(Optional.of(existingRanking));
+        when(rankingRepository.findBySpecieId(1L)).thenReturn(Optional.of(existingRanking));
         when(rankingRepository.save(any(Ranking.class))).thenReturn(updatedRanking);
-        when(especieService.getEspecieEntityById(1L)).thenReturn(especieVulcan);
-        when(rankingMapper.toResponse(updatedRanking, especieVulcan)).thenReturn(updatedResponse);
+        when(specieService.getEspecieEntityById(1L)).thenReturn(specieVulcan);
+        when(rankingMapper.toResponse(updatedRanking, specieVulcan)).thenReturn(updatedResponse);
 
         // Act
-        RankingResponse result = rankingService.addVictory(1L);
+        RankingResponse result = rankingServiceImpl.addVictory(1L);
 
         // Assert
         assertThat(result.victorias()).isEqualTo(6L);
@@ -133,11 +145,11 @@ class RankingServiceTest {
     void testGetRankingById() {
         // Arrange
         when(rankingRepository.findById(1L)).thenReturn(Optional.of(newRanking));
-        when(especieService.getEspecieEntityById(1L)).thenReturn(especieVulcan);
-        when(rankingMapper.toResponse(newRanking, especieVulcan)).thenReturn(rankingResponse);
+        when(specieService.getEspecieEntityById(1L)).thenReturn(specieVulcan);
+        when(rankingMapper.toResponse(newRanking, specieVulcan)).thenReturn(rankingResponse);
 
         // Act
-        RankingResponse result = rankingService.getRankingById(1L);
+        RankingResponse result = rankingServiceImpl.getRankingById(1L);
 
         // Assert
         assertThat(result).isNotNull();
@@ -149,12 +161,12 @@ class RankingServiceTest {
     @DisplayName("Should retrieve ranking by species ID")
     void testGetRankingBySpecieId() {
         // Arrange
-        when(rankingRepository.findByIdEspecie(1L)).thenReturn(Optional.of(newRanking));
-        when(especieService.getEspecieEntityById(1L)).thenReturn(especieVulcan);
-        when(rankingMapper.toResponse(newRanking, especieVulcan)).thenReturn(rankingResponse);
+        when(rankingRepository.findBySpecieId(1L)).thenReturn(Optional.of(newRanking));
+        when(specieService.getEspecieEntityById(1L)).thenReturn(specieVulcan);
+        when(rankingMapper.toResponse(newRanking, specieVulcan)).thenReturn(rankingResponse);
 
         // Act
-        RankingResponse result = rankingService.getRankingBySpecieId(1L);
+        RankingResponse result = rankingServiceImpl.getRankingBySpecieId(1L);
 
         // Assert
         assertThat(result).isNotNull();
@@ -165,24 +177,24 @@ class RankingServiceTest {
     @DisplayName("Should check if ranking exists")
     void testRankingExists() {
         // Arrange
-        when(rankingRepository.existsByIdEspecie(1L)).thenReturn(true);
+        when(rankingRepository.existsBySpecieId(1L)).thenReturn(true);
 
         // Act
-        boolean exists = rankingService.rankingExists(1L);
+        boolean exists = rankingServiceImpl.rankingExists(1L);
 
         // Assert
         assertThat(exists).isTrue();
-        verify(rankingRepository).existsByIdEspecie(1L);
+        verify(rankingRepository).existsBySpecieId(1L);
     }
 
     @Test
     @DisplayName("Should return false when ranking does not exist")
     void testRankingNotExists() {
         // Arrange
-        when(rankingRepository.existsByIdEspecie(999L)).thenReturn(false);
+        when(rankingRepository.existsBySpecieId(999L)).thenReturn(false);
 
         // Act
-        boolean exists = rankingService.rankingExists(999L);
+        boolean exists = rankingServiceImpl.rankingExists(999L);
 
         // Assert
         assertThat(exists).isFalse();

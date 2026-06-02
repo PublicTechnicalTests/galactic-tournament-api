@@ -1,12 +1,12 @@
 package com.technicaltests.mv.galactictournamentapi.service;
 
-import com.technicaltests.mv.galactictournamentapi.dto.CreateSpecieRequest;
-import com.technicaltests.mv.galactictournamentapi.dto.SpecieResponse;
-import com.technicaltests.mv.galactictournamentapi.entity.Especie;
+import com.technicaltests.mv.galactictournamentapi.dto.request.specie.CreateSpecieRequest;
+import com.technicaltests.mv.galactictournamentapi.dto.response.specie.SpecieResponse;
+import com.technicaltests.mv.galactictournamentapi.entity.Specie;
 import com.technicaltests.mv.galactictournamentapi.exception.SpecieAlreadyExistsException;
 import com.technicaltests.mv.galactictournamentapi.exception.SpecieNotFoundException;
-import com.technicaltests.mv.galactictournamentapi.mapper.EspecieMapper;
-import com.technicaltests.mv.galactictournamentapi.repository.EspecieRepository;
+import com.technicaltests.mv.galactictournamentapi.mapper.SpecieMapper;
+import com.technicaltests.mv.galactictournamentapi.repository.SpecieRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -35,28 +35,28 @@ import static org.mockito.Mockito.*;
  */
 @ExtendWith(MockitoExtension.class)
 @DisplayName("EspecieService Unit Tests")
-class EspecieServiceTest {
+class SpecieServiceImplTest {
 
     @Mock
-    private EspecieRepository especieRepository;
+    private SpecieRepository specieRepository;
 
     @Mock
-    private EspecieMapper especieMapper;
+    private SpecieMapper specieMapper;
 
     @InjectMocks
-    private EspecieService especieService;
+    private SpecieService specieService;
 
     private CreateSpecieRequest createRequest;
-    private Especie testEspecie;
+    private Specie testSpecie;
     private SpecieResponse testResponse;
 
     @BeforeEach
     void setUp() {
         createRequest = new CreateSpecieRequest("Vulcan", 100, "Mind meditation");
 
-        testEspecie = new Especie("Vulcan", 100, "Mind meditation");
-        testEspecie.setIdEspecie(1L);
-        testEspecie.setFechaCreacion(LocalDateTime.now());
+        testSpecie = new Specie("Vulcan", 100, "Mind meditation");
+        testSpecie.setSpecieId(1L);
+        testSpecie.setCreationDate(LocalDateTime.now());
 
         testResponse = new SpecieResponse(1L, "Vulcan", 100, "Mind meditation", LocalDateTime.now());
     }
@@ -65,60 +65,60 @@ class EspecieServiceTest {
     @DisplayName("Should create a new species successfully")
     void testCreateSpecieSuccess() {
         // Arrange
-        when(especieRepository.existsByNombre(createRequest.nombre())).thenReturn(false);
-        when(especieMapper.toEntity(createRequest)).thenReturn(testEspecie);
-        when(especieRepository.save(any(Especie.class))).thenReturn(testEspecie);
-        when(especieMapper.toResponse(testEspecie)).thenReturn(testResponse);
+        when(specieRepository.existsByName(createRequest.name())).thenReturn(false);
+        when(specieMapper.toEntity(createRequest)).thenReturn(testSpecie);
+        when(specieRepository.save(any(Specie.class))).thenReturn(testSpecie);
+        when(specieMapper.toResponse(testSpecie)).thenReturn(testResponse);
 
         // Act
-        SpecieResponse result = especieService.createSpecie(createRequest);
+        SpecieResponse result = specieService.createSpecie(createRequest);
 
         // Assert
         assertThat(result).isNotNull();
-        assertThat(result.idEspecie()).isEqualTo(1L);
-        assertThat(result.nombre()).isEqualTo("Vulcan");
-        verify(especieRepository).save(any(Especie.class));
-        verify(especieMapper).toResponse(testEspecie);
+        assertThat(result.specieId()).isEqualTo(1L);
+        assertThat(result.name()).isEqualTo("Vulcan");
+        verify(specieRepository).save(any(Specie.class));
+        verify(specieMapper).toResponse(testSpecie);
     }
 
     @Test
     @DisplayName("Should throw exception when creating duplicate species")
     void testCreateSpecieDuplicate() {
         // Arrange
-        when(especieRepository.existsByNombre(createRequest.nombre())).thenReturn(true);
+        when(specieRepository.existsByName(createRequest.name())).thenReturn(true);
 
         // Act & Assert
-        assertThatThrownBy(() -> especieService.createSpecie(createRequest))
+        assertThatThrownBy(() -> specieService.createSpecie(createRequest))
                 .isInstanceOf(SpecieAlreadyExistsException.class)
                 .hasMessageContaining("already exists");
 
-        verify(especieRepository, never()).save(any());
+        verify(specieRepository, never()).save(any());
     }
 
     @Test
     @DisplayName("Should retrieve species by ID successfully")
     void testGetSpecieByIdSuccess() {
         // Arrange
-        when(especieRepository.findById(1L)).thenReturn(Optional.of(testEspecie));
-        when(especieMapper.toResponse(testEspecie)).thenReturn(testResponse);
+        when(specieRepository.findById(1L)).thenReturn(Optional.of(testSpecie));
+        when(specieMapper.toResponse(testSpecie)).thenReturn(testResponse);
 
         // Act
-        SpecieResponse result = especieService.getSpecieById(1L);
+        SpecieResponse result = specieService.getSpecieById(1L);
 
         // Assert
         assertThat(result).isNotNull();
-        assertThat(result.idEspecie()).isEqualTo(1L);
-        verify(especieRepository).findById(1L);
+        assertThat(result.specieId()).isEqualTo(1L);
+        verify(specieRepository).findById(1L);
     }
 
     @Test
     @DisplayName("Should throw exception when species not found by ID")
     void testGetSpecieByIdNotFound() {
         // Arrange
-        when(especieRepository.findById(999L)).thenReturn(Optional.empty());
+        when(specieRepository.findById(999L)).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThatThrownBy(() -> especieService.getSpecieById(999L))
+        assertThatThrownBy(() -> specieService.getSpecieById(999L))
                 .isInstanceOf(SpecieNotFoundException.class)
                 .hasMessageContaining("not found");
     }
@@ -127,26 +127,26 @@ class EspecieServiceTest {
     @DisplayName("Should retrieve species by name successfully")
     void testGetSpecieByNombreSuccess() {
         // Arrange
-        when(especieRepository.findByNombre("Vulcan")).thenReturn(Optional.of(testEspecie));
-        when(especieMapper.toResponse(testEspecie)).thenReturn(testResponse);
+        when(specieRepository.findByName("Vulcan")).thenReturn(Optional.of(testSpecie));
+        when(specieMapper.toResponse(testSpecie)).thenReturn(testResponse);
 
         // Act
-        SpecieResponse result = especieService.getSpecieByNombre("Vulcan");
+        SpecieResponse result = specieService.getSpecieByNombre("Vulcan");
 
         // Assert
         assertThat(result).isNotNull();
-        assertThat(result.nombre()).isEqualTo("Vulcan");
-        verify(especieRepository).findByNombre("Vulcan");
+        assertThat(result.name()).isEqualTo("Vulcan");
+        verify(specieRepository).findByName("Vulcan");
     }
 
     @Test
     @DisplayName("Should throw exception when species not found by name")
     void testGetSpecieByNombreNotFound() {
         // Arrange
-        when(especieRepository.findByNombre(anyString())).thenReturn(Optional.empty());
+        when(specieRepository.findByName(anyString())).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThatThrownBy(() -> especieService.getSpecieByNombre("NonExistent"))
+        assertThatThrownBy(() -> specieService.getSpecieByNombre("NonExistent"))
                 .isInstanceOf(SpecieNotFoundException.class)
                 .hasMessageContaining("not found");
     }
@@ -155,28 +155,28 @@ class EspecieServiceTest {
     @DisplayName("Should retrieve all species successfully")
     void testGetAllSpeciesSuccess() {
         // Arrange
-        List<Especie> especies = List.of(testEspecie);
-        when(especieRepository.findAll()).thenReturn(especies);
-        when(especieMapper.toResponse(testEspecie)).thenReturn(testResponse);
+        List<Specie> especies = List.of(testSpecie);
+        when(specieRepository.findAll()).thenReturn(especies);
+        when(specieMapper.toResponse(testSpecie)).thenReturn(testResponse);
 
         // Act
-        List<SpecieResponse> result = especieService.getAllSpecies();
+        List<SpecieResponse> result = specieService.getAllSpecies();
 
         // Assert
         assertThat(result).isNotNull();
         assertThat(result).hasSize(1);
-        assertThat(result.get(0).nombre()).isEqualTo("Vulcan");
-        verify(especieRepository).findAll();
+        assertThat(result.get(0).name()).isEqualTo("Vulcan");
+        verify(specieRepository).findAll();
     }
 
     @Test
     @DisplayName("Should return empty list when no species exist")
     void testGetAllSpeciesEmpty() {
         // Arrange
-        when(especieRepository.findAll()).thenReturn(List.of());
+        when(specieRepository.findAll()).thenReturn(List.of());
 
         // Act
-        List<SpecieResponse> result = especieService.getAllSpecies();
+        List<SpecieResponse> result = specieService.getAllSpecies();
 
         // Assert
         assertThat(result).isNotNull();
@@ -187,37 +187,37 @@ class EspecieServiceTest {
     @DisplayName("Should check if species exists by ID")
     void testExistsById() {
         // Arrange
-        when(especieRepository.existsById(1L)).thenReturn(true);
-        when(especieRepository.existsById(999L)).thenReturn(false);
+        when(specieRepository.existsById(1L)).thenReturn(true);
+        when(specieRepository.existsById(999L)).thenReturn(false);
 
         // Act & Assert
-        assertThat(especieService.existsById(1L)).isTrue();
-        assertThat(especieService.existsById(999L)).isFalse();
+        assertThat(specieService.existsById(1L)).isTrue();
+        assertThat(specieService.existsById(999L)).isFalse();
     }
 
     @Test
     @DisplayName("Should retrieve Especie entity by ID successfully")
     void testGetEspecieEntityByIdSuccess() {
         // Arrange
-        when(especieRepository.findById(1L)).thenReturn(Optional.of(testEspecie));
+        when(specieRepository.findById(1L)).thenReturn(Optional.of(testSpecie));
 
         // Act
-        Especie result = especieService.getEspecieEntityById(1L);
+        Specie result = specieService.getEspecieEntityById(1L);
 
         // Assert
         assertThat(result).isNotNull();
-        assertThat(result.getIdEspecie()).isEqualTo(1L);
-        verify(especieRepository).findById(1L);
+        assertThat(result.getSpecieId()).isEqualTo(1L);
+        verify(specieRepository).findById(1L);
     }
 
     @Test
     @DisplayName("Should throw exception when Especie entity not found by ID")
     void testGetEspecieEntityByIdNotFound() {
         // Arrange
-        when(especieRepository.findById(999L)).thenReturn(Optional.empty());
+        when(specieRepository.findById(999L)).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThatThrownBy(() -> especieService.getEspecieEntityById(999L))
+        assertThatThrownBy(() -> specieService.getEspecieEntityById(999L))
                 .isInstanceOf(SpecieNotFoundException.class);
     }
 }

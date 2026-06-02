@@ -4,9 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
-import lombok.Getter;
-import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
+import lombok.*;
 import org.hibernate.annotations.CurrentTimestamp;
 
 import java.time.LocalDateTime;
@@ -21,11 +19,14 @@ import java.time.LocalDateTime;
  * @version 1.0
  * @since 2026
  */
+@Builder
 @Setter
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
-@Table(name = "especies", uniqueConstraints = @UniqueConstraint(columnNames = "nombre"))
-public class Especie {
+@Table(name = "especies", uniqueConstraints = @UniqueConstraint(columnNames = "name"))
+public class Specie {
 
     /**
      * Unique identifier for the species.
@@ -37,12 +38,12 @@ public class Especie {
      * Sets the species ID.
      *
      * @return the unique identifier
-     * @param idEspecie the unique identifier
+     * @param specieId the unique identifier
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_especie")
-    private Long idEspecie;
+    @Column(name = "specie_id")
+    private Long specieId;
 
     /**
      * Name of the species. Must be unique and not null.
@@ -54,11 +55,11 @@ public class Especie {
      * Sets the species name.
      *
      * @return the name
-     * @param nombre the name to set
+     * @param name the name to set
      */
     @NotBlank(message = "Species name must not be blank")
-    @Column(name = "nombre", nullable = false, length = 100)
-    private String nombre;
+    @Column(name = "name", nullable = false, length = 100)
+    private String name;
 
     /**
      * Power level of the species. Must be positive and not null.
@@ -70,12 +71,12 @@ public class Especie {
      * Sets the power level.
      *
      * @return the power level
-     * @param poder the power level to set
+     * @param power the power level to set
      */
     @NotNull(message = "Species power must not be null")
     @Positive(message = "Species power must be positive")
-    @Column(name = "poder", nullable = false)
-    private Integer poder;
+    @Column(name = "power", nullable = false)
+    private Integer power;
 
     /**
      * Special ability of the species. Must not be blank.
@@ -87,11 +88,11 @@ public class Especie {
      * Sets the special ability.
      *
      * @return the ability description
-     * @param habilidad the ability description to set
+     * @param ability the ability description to set
      */
     @NotBlank(message = "Species ability must not be blank")
-    @Column(name = "habilidad", nullable = false, length = 255)
-    private String habilidad;
+    @Column(name = "ability", nullable = false, length = 255)
+    private String ability;
 
     /**
      * Creation timestamp. Automatically set when the entity is persisted.
@@ -103,43 +104,34 @@ public class Especie {
      * Sets the creation timestamp.
      *
      * @return the creation date and time
-     * @param fechaCreacion the creation date and time
+     * @param creationDate the creation date and time
      */
     @CurrentTimestamp
-    @Column(name = "fecha_creacion", nullable = false, updatable = false)
-    private LocalDateTime fechaCreacion;
+    @Column(name = "creation_date", nullable = false, updatable = false)
+    private LocalDateTime creationDate;
 
-    // Constructors
-
-    /**
-     * Default constructor for JPA.
-     */
-    public Especie() {
-    }
+    // Lifecycle callbacks
 
     /**
-     * Constructor with all fields except ID and creation date.
-     *
-     * @param nombre    the name of the species
-     * @param poder     the power level of the species
-     * @param habilidad the special ability of the species
+     * Set creation date before persisting.
      */
-    public Especie(String nombre, Integer poder, String habilidad) {
-        this.nombre = nombre;
-        this.poder = poder;
-        this.habilidad = habilidad;
+    @PrePersist
+    protected void onCreate() {
+        if (this.creationDate == null) {
+            this.creationDate = LocalDateTime.now();
+        }
     }
 
     // Getters and Setters
 
     @Override
     public String toString() {
-        return "Especie{" +
-                "idEspecie=" + idEspecie +
-                ", nombre='" + nombre + '\'' +
-                ", poder=" + poder +
-                ", habilidad='" + habilidad + '\'' +
-                ", fechaCreacion=" + fechaCreacion +
+        return "Specie{" +
+                "specieId=" + specieId +
+                ", name='" + name + '\'' +
+                ", power=" + power +
+                ", ability='" + ability + '\'' +
+                ", creationDate=" + creationDate +
                 '}';
     }
 }

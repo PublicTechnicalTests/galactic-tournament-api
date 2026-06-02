@@ -1,8 +1,8 @@
 package com.technicaltests.mv.galactictournamentapi.mapper;
 
-import com.technicaltests.mv.galactictournamentapi.dto.RankingResponse;
+import com.technicaltests.mv.galactictournamentapi.dto.response.ranking.RankingResponse;
 import com.technicaltests.mv.galactictournamentapi.entity.Ranking;
-import com.technicaltests.mv.galactictournamentapi.entity.Especie;
+import com.technicaltests.mv.galactictournamentapi.entity.Specie;
 import org.springframework.stereotype.Component;
 
 /**
@@ -22,15 +22,15 @@ public class RankingMapper {
      * Converts a Ranking entity to a RankingResponse DTO.
      *
      * @param ranking the Ranking entity
-     * @param especie the associated Especie entity (for nombre)
+     * @param specie the associated Especie entity (for name)
      * @return the converted RankingResponse DTO
      */
-    public RankingResponse toResponse(Ranking ranking, Especie especie) {
+    public RankingResponse toResponse(Ranking ranking, Specie specie) {
         return new RankingResponse(
-                ranking.getIdRanking(),
-                ranking.getIdEspecie(),
-                especie.getNombre(),
-                ranking.getVictorias()
+                ranking.getRankingId(),
+                ranking.getSpecieId(),
+                specie.getName(),
+                ranking.getVictories()
         );
     }
 }

@@ -1,8 +1,8 @@
 package com.technicaltests.mv.galactictournamentapi.controller;
 
-import com.technicaltests.mv.galactictournamentapi.dto.CreateRankingRequest;
-import com.technicaltests.mv.galactictournamentapi.dto.RankingResponse;
-import com.technicaltests.mv.galactictournamentapi.service.RankingService;
+import com.technicaltests.mv.galactictournamentapi.dto.request.ranking.CreateRankingRequest;
+import com.technicaltests.mv.galactictournamentapi.dto.response.ranking.RankingResponse;
+import com.technicaltests.mv.galactictournamentapi.service.RankingServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -18,7 +18,7 @@ import java.util.List;
 
 /**
  * REST Controller for managing rankings in the galactic tournament.
- *
+ * <p>
  * Provides endpoints for creating and retrieving species rankings.
  * Rankings track the number of victories for each species.
  *
@@ -33,11 +33,11 @@ import java.util.List;
 @RequiredArgsConstructor
 public class RankingController {
 
-    private final RankingService rankingService;
+    private final RankingServiceImpl rankingServiceImpl;
 
     /**
      * Creates a new ranking for a species.
-     *
+     * <p>
      * Validates that the species exists and doesn't already have a ranking.
      *
      * @param request the create ranking request
@@ -55,9 +55,9 @@ public class RankingController {
             @ApiResponse(responseCode = "404", description = "Species not found")
     })
     public ResponseEntity<RankingResponse> createRanking(@Valid @RequestBody CreateRankingRequest request) {
-        log.info("POST request to create ranking for species ID: {}", request.idEspecie());
+        log.info("POST request to create ranking for species ID: {}", request.specieId());
 
-        RankingResponse response = rankingService.createRanking(request);
+        RankingResponse response = rankingServiceImpl.createRanking(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -79,7 +79,7 @@ public class RankingController {
     public ResponseEntity<RankingResponse> getRankingById(@PathVariable Long id) {
         log.info("GET request to retrieve ranking with ID: {}", id);
 
-        RankingResponse response = rankingService.getRankingById(id);
+        RankingResponse response = rankingServiceImpl.getRankingById(id);
         return ResponseEntity.ok(response);
     }
 
@@ -101,7 +101,7 @@ public class RankingController {
     public ResponseEntity<RankingResponse> getRankingBySpecieId(@PathVariable Long specieId) {
         log.info("GET request to retrieve ranking for species ID: {}", specieId);
 
-        RankingResponse response = rankingService.getRankingBySpecieId(specieId);
+        RankingResponse response = rankingServiceImpl.getRankingBySpecieId(specieId);
         return ResponseEntity.ok(response);
     }
 
@@ -119,7 +119,7 @@ public class RankingController {
     public ResponseEntity<List<RankingResponse>> getLeaderboard() {
         log.info("GET request to retrieve leaderboard");
 
-        List<RankingResponse> response = rankingService.getAllRankingsOrderedByVictorias();
+        List<RankingResponse> response = rankingServiceImpl.getAllRankingsOrderedByVictorias();
         return ResponseEntity.ok(response);
     }
 }

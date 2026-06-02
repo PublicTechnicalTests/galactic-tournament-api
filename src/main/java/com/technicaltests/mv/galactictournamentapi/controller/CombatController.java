@@ -1,9 +1,9 @@
 package com.technicaltests.mv.galactictournamentapi.controller;
 
-import com.technicaltests.mv.galactictournamentapi.dto.StartBattleRequest;
-import com.technicaltests.mv.galactictournamentapi.dto.AddBattleResultRequest;
-import com.technicaltests.mv.galactictournamentapi.dto.BattleResponse;
-import com.technicaltests.mv.galactictournamentapi.service.CombateService;
+import com.technicaltests.mv.galactictournamentapi.dto.request.combat.StartCombatRequest;
+import com.technicaltests.mv.galactictournamentapi.dto.request.combat.AddCombatResultRequest;
+import com.technicaltests.mv.galactictournamentapi.dto.response.combat.CombatResponse;
+import com.technicaltests.mv.galactictournamentapi.service.CombatService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 /**
  * REST Controller for managing battles in the galactic tournament.
- *
+ * <p>
  * Provides endpoints for starting battles and adding battle results.
  * All endpoints include comprehensive API documentation via Swagger/OpenAPI.
  *
@@ -30,13 +30,13 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Battles", description = "API for managing galactic battles")
 @Slf4j
 @RequiredArgsConstructor
-public class CombateController {
+public class CombatController {
 
-    private final CombateService combateService;
+    private final CombatService combatService;
 
     /**
      * Starts a battle between two species with automatic winner determination.
-     *
+     * <p>
      * The winner is determined by:
      * 1. Higher power level wins
      * 2. If power is equal, alphabetically first species wins
@@ -55,11 +55,11 @@ public class CombateController {
             @ApiResponse(responseCode = "400", description = "Invalid request body"),
             @ApiResponse(responseCode = "404", description = "One or both species not found")
     })
-    public ResponseEntity<BattleResponse> startBattle(@Valid @RequestBody StartBattleRequest request) {
+    public ResponseEntity<CombatResponse> startBattle(@Valid @RequestBody StartCombatRequest request) {
         log.info("POST request to start battle between species {} and {}",
-                request.idContendiente1(), request.idContendiente2());
+                request.firstcontenderId(), request.secondContenderId());
 
-        BattleResponse response = combateService.startBattle(request);
+        CombatResponse response = combatService.startBattle(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -80,13 +80,13 @@ public class CombateController {
     })
     public ResponseEntity<Object> getBattleById(@PathVariable Long id) {
         log.info("GET request to retrieve battle with ID: {}", id);
-        Object response = combateService.getBattleById(id);
+        Object response = combatService.getBattleById(id);
         return ResponseEntity.ok(response);
     }
 
     /**
      * Adds a battle result manually without automatic winner determination.
-     *
+     * <p>
      * This endpoint allows explicitly specifying the winner without
      * using the automatic power-based winner determination.
      *
@@ -104,11 +104,11 @@ public class CombateController {
             @ApiResponse(responseCode = "400", description = "Invalid request (winner not one of contenders)"),
             @ApiResponse(responseCode = "404", description = "One or more species not found")
     })
-    public ResponseEntity<BattleResponse> addBattleResult(@Valid @RequestBody AddBattleResultRequest request) {
+    public ResponseEntity<CombatResponse> addBattleResult(@Valid @RequestBody AddCombatResultRequest request) {
         log.info("POST request to add battle result: {} vs {}, winner: {}",
-                request.idContendiente1(), request.idContendiente2(), request.idGanador());
+                request.firstcontenderId(), request.secondContenderId(), request.winnerId());
 
-        BattleResponse response = combateService.addBattleResult(request);
+        CombatResponse response = combatService.addBattleResult(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 

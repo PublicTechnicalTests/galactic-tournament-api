@@ -1,6 +1,7 @@
-package com.technicaltests.mv.galactictournamentapi.dto;
+package com.technicaltests.mv.galactictournamentapi.dto.request.specie;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.technicaltests.mv.galactictournamentapi.dto.response.specie.SpecieResponse;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.List;
