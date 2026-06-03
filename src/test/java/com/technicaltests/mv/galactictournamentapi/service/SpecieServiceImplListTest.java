@@ -23,9 +23,8 @@ import org.springframework.data.jpa.domain.Specification;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -49,7 +48,7 @@ class SpecieServiceImplListTest {
     private SpecieMapper specieMapper;
 
     @InjectMocks
-    private SpecieService specieService;
+    private SpecieServiceImpl specieService;
 
     @Captor
     private ArgumentCaptor<Pageable> pageableCaptor;
@@ -60,13 +59,21 @@ class SpecieServiceImplListTest {
 
     @BeforeEach
     void setUp() {
-        testSpecie1 = new Specie("Vulcan", 100, "Mind meditation");
-        testSpecie1.setSpecieId(1L);
-        testSpecie1.setCreationDate(LocalDateTime.now());
+        testSpecie1 = Specie.builder()
+                .specieId(1L)
+                .name("Vulcan")
+                .power(100)
+                .ability("Mind meditation")
+                .creationDate(LocalDateTime.now())
+                .build();
 
-        testSpecie2 = new Specie("Klingon", 150, "Warrior strength");
-        testSpecie2.setSpecieId(2L);
-        testSpecie2.setCreationDate(LocalDateTime.now());
+        testSpecie2 = Specie.builder()
+                .specieId(2L)
+                .name("Klingon")
+                .power(150)
+                .ability("Warrior strength")
+                .creationDate(LocalDateTime.now())
+                .build();
 
         testQuery = new SpecieListQuery(0, 20, "power", "DESC", null, null, null);
     }

@@ -43,6 +43,9 @@ class CombatServiceImplTest {
     @Mock
     private SpecieService specieService;
 
+    @Mock
+    private RankingService rankingService;
+
     @InjectMocks
     private CombatServiceImpl combatService;
 
@@ -55,14 +58,22 @@ class CombatServiceImplTest {
     @BeforeEach
     void setUp() {
         // Setup Vulcan (100 power)
-        specieVulcan = new Specie("Vulcan", 100, "Mind meditation");
-        specieVulcan.setSpecieId(1L);
-        specieVulcan.setCreationDate(LocalDateTime.now());
+        specieVulcan = Specie.builder()
+                .specieId(1L)
+                .name("Vulcan")
+                .power(100)
+                .ability("Mind meditation")
+                .creationDate(LocalDateTime.now())
+                .build();
 
         // Setup Klingon (150 power)
-        specieKlingon = new Specie("Klingon", 150, "Warrior strength");
-        specieKlingon.setSpecieId(2L);
-        specieKlingon.setCreationDate(LocalDateTime.now());
+        specieKlingon = Specie.builder()
+                .specieId(2L)
+                .name("Klingon")
+                .power(150)
+                .ability("Warrior strength")
+                .creationDate(LocalDateTime.now())
+                .build();
 
         // Setup request
         battleRequest = new StartCombatRequest(1L, 2L);
@@ -70,15 +81,15 @@ class CombatServiceImplTest {
         // Setup saved battle (Klingon wins because of higher power)
         savedCombat =
                 Combat.builder()
+                        .combatId(1L)
                         .firstContenderId(1L)
                         .secondContenderId(2L)
                         .winnerId(2L)
+                        .creationDate(LocalDateTime.now())
                         .build();
-        savedCombat.setCombatId(1L);
-        savedCombat.setFechaCreacion(LocalDateTime.now());
 
         // Setup response
-        combatResponse = new CombatResponse(1L, 1L, 2L, 2L, "Klingon", 150L, LocalDateTime.now());
+        combatResponse = new CombatResponse(1L, 1L, 2L, 2L, "Klingon", 150L);
     }
 
     @Test
@@ -105,26 +116,34 @@ class CombatServiceImplTest {
     @DisplayName("Should determine winner alphabetically when power is equal")
     void testStartBattleWinnerAlphabetical() {
         // Arrange - Setup species with equal power
-        Specie specieA = new Specie("Andorian", 100, "Logical");
-        specieA.setSpecieId(3L);
-        specieA.setCreationDate(LocalDateTime.now());
+        Specie specieA = Specie.builder()
+                .specieId(3L)
+                .name("Andorian")
+                .power(100)
+                .ability("Logical")
+                .creationDate(LocalDateTime.now())
+                .build();
 
-        Specie specieB = new Specie("Betazoid", 100, "Telepathy");
-        specieB.setSpecieId(4L);
-        specieB.setCreationDate(LocalDateTime.now());
+        Specie specieB = Specie.builder()
+                .specieId(4L)
+                .name("Betazoid")
+                .power(100)
+                .ability("Telepathy")
+                .creationDate(LocalDateTime.now())
+                .build();
 
         StartCombatRequest equalPowerBattle = new StartCombatRequest(3L, 4L);
 
         Combat equalPowerCombat =
                 Combat.builder()
+                        .combatId(2L)
                         .firstContenderId(3L)
                         .secondContenderId(4L)
                         .winnerId(3L)
-                        .build();// Andorian wins (comes first alphabetically)
-        equalPowerCombat.setCombatId(2L);
-        equalPowerCombat.setFechaCreacion(LocalDateTime.now());
+                        .creationDate(LocalDateTime.now())
+                        .build();
 
-        CombatResponse equalPowerResponse = new CombatResponse(2L, 3L, 4L, 3L, "Andorian", 100L, LocalDateTime.now());
+        CombatResponse equalPowerResponse = new CombatResponse(2L, 3L, 4L, 3L, "Andorian", 100L);
 
         when(specieService.getEspecieEntityById(3L)).thenReturn(specieA);
         when(specieService.getEspecieEntityById(4L)).thenReturn(specieB);

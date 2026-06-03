@@ -44,7 +44,7 @@ class SpecieServiceImplTest {
     private SpecieMapper specieMapper;
 
     @InjectMocks
-    private SpecieService specieService;
+    private SpecieServiceImpl specieService;
 
     private CreateSpecieRequest createRequest;
     private Specie testSpecie;
@@ -54,11 +54,15 @@ class SpecieServiceImplTest {
     void setUp() {
         createRequest = new CreateSpecieRequest("Vulcan", 100, "Mind meditation");
 
-        testSpecie = new Specie("Vulcan", 100, "Mind meditation");
-        testSpecie.setSpecieId(1L);
-        testSpecie.setCreationDate(LocalDateTime.now());
+        testSpecie = Specie.builder()
+                .specieId(1L)
+                .name("Vulcan")
+                .power(100)
+                .ability("Mind meditation")
+                .creationDate(LocalDateTime.now())
+                .build();
 
-        testResponse = new SpecieResponse(1L, "Vulcan", 100, "Mind meditation", LocalDateTime.now());
+        testResponse = new SpecieResponse(1L, "Vulcan", 100, "Mind meditation");
     }
 
     @Test

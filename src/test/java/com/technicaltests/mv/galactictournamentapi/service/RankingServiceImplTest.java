@@ -1,6 +1,5 @@
 package com.technicaltests.mv.galactictournamentapi.service;
 
-import com.technicaltests.mv.galactictournamentapi.dto.request.ranking.CreateRankingRequest;
 import com.technicaltests.mv.galactictournamentapi.dto.response.ranking.RankingResponse;
 import com.technicaltests.mv.galactictournamentapi.entity.Ranking;
 import com.technicaltests.mv.galactictournamentapi.entity.Specie;
@@ -15,6 +14,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
@@ -47,7 +47,6 @@ class RankingServiceImplTest {
     private RankingServiceImpl rankingServiceImpl;
 
     private Specie specieVulcan;
-    private CreateRankingRequest createRequest;
     private Ranking newRanking;
     private RankingResponse rankingResponse;
 
@@ -56,121 +55,86 @@ class RankingServiceImplTest {
         // Setup Vulcan
         specieVulcan =
                 Specie.builder()
+                        .specieId(1L)
                         .name("Vulcan")
                         .power(100)
                         .ability("Mind meditation")
+                        .creationDate(LocalDateTime.now())
                         .build();
-        specieVulcan.setSpecieId(1L);
-        specieVulcan.setCreationDate(LocalDateTime.now());
-
-        // Setup request
-        createRequest = new CreateRankingRequest(1L);
 
         // Setup new ranking
-        newRanking = Ranking.builder().rankingId(1L).build();
-        newRanking.setRankingId(1L);
+        newRanking = Ranking.builder()
+                .rankingId(1L)
+                .specieId(1L)
+                .build();
 
         // Setup response
         rankingResponse = new RankingResponse(1L, 1L, "Vulcan", 0L);
     }
 
     @Test
-    @DisplayName("Should create ranking for species")
-    void testCreateRanking() {
+    @DisplayName("Should add victory and create ranking if not exists")
+    void testAddVictoryCreatesRankingIfNotExists() {
         // Arrange
-        when(specieService.getEspecieEntityById(1L)).thenReturn(specieVulcan);
         when(rankingRepository.existsBySpecieId(1L)).thenReturn(false);
+        when(specieService.getEspecieEntityById(1L)).thenReturn(specieVulcan);
         when(rankingRepository.save(any(Ranking.class))).thenReturn(newRanking);
         when(rankingMapper.toResponse(newRanking, specieVulcan)).thenReturn(rankingResponse);
 
         // Act
-        RankingResponse result = rankingServiceImpl.createRanking(createRequest);
+        boolean result = rankingServiceImpl.addVictory(1L);
 
         // Assert
-        assertThat(result).isNotNull();
-        assertThat(result.idEspecie()).isEqualTo(1L);
-        assertThat(result.victorias()).isZero();
+        assertThat(result).isTrue();
         verify(rankingRepository).save(any(Ranking.class));
     }
 
     @Test
-    @DisplayName("Should throw exception when ranking already exists")
-    void testCreateRankingAlreadyExists() {
+    @DisplayName("Should add victory to existing ranking")
+    void testAddVictoryToExistingRanking() {
         // Arrange
-        when(specieService.getEspecieEntityById(1L)).thenReturn(specieVulcan);
-        when(rankingRepository.existsBySpecieId(1L)).thenReturn(true);
-
-        // Act & Assert
-        assertThatThrownBy(() -> rankingServiceImpl.createRanking(createRequest))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("Ranking already exists");
-
-        verify(rankingRepository, never()).save(any());
-    }
-
-    @Test
-    @DisplayName("Should add victory to ranking")
-    void testAddVictory() {
-        // Arrange
-        Ranking existingRanking =
-                Ranking.builder()
-                        .rankingId(1L)
-                        .specieId(5L)
-                        .build();
-        existingRanking.setRankingId(1L);
-
-        Ranking updatedRanking =                 Ranking.builder()
+        Ranking existingRanking = Ranking.builder()
                 .rankingId(1L)
-                .specieId(6L)
+                .specieId(1L)
+                .victories(5L)
                 .build();
-        updatedRanking.setRankingId(1L);
 
-        RankingResponse updatedResponse = new RankingResponse(1L, 1L, "Vulcan", 6L);
+        Ranking updatedRanking = Ranking.builder()
+                .rankingId(1L)
+                .specieId(1L)
+                .victories(6L)
+                .build();
 
+        when(rankingRepository.existsBySpecieId(1L)).thenReturn(true);
         when(rankingRepository.findBySpecieId(1L)).thenReturn(Optional.of(existingRanking));
         when(rankingRepository.save(any(Ranking.class))).thenReturn(updatedRanking);
-        when(specieService.getEspecieEntityById(1L)).thenReturn(specieVulcan);
-        when(rankingMapper.toResponse(updatedRanking, specieVulcan)).thenReturn(updatedResponse);
 
         // Act
-        RankingResponse result = rankingServiceImpl.addVictory(1L);
+        boolean result = rankingServiceImpl.addVictory(1L);
 
         // Assert
-        assertThat(result.victorias()).isEqualTo(6L);
+        assertThat(result).isTrue();
         verify(rankingRepository).save(any(Ranking.class));
     }
 
+
     @Test
-    @DisplayName("Should retrieve ranking by ID")
-    void testGetRankingById() {
+    @DisplayName("Should retrieve all rankings ordered by victories")
+    void testGetAllRankingsOrderedByVictorias() {
         // Arrange
-        when(rankingRepository.findById(1L)).thenReturn(Optional.of(newRanking));
+        List<Ranking> rankings = List.of(newRanking);
+        when(rankingRepository.findAllOrderByVictories()).thenReturn(rankings);
         when(specieService.getEspecieEntityById(1L)).thenReturn(specieVulcan);
         when(rankingMapper.toResponse(newRanking, specieVulcan)).thenReturn(rankingResponse);
 
         // Act
-        RankingResponse result = rankingServiceImpl.getRankingById(1L);
+        List<RankingResponse> result = rankingServiceImpl.getAllRankingsOrderedByVictorias();
 
         // Assert
         assertThat(result).isNotNull();
-        assertThat(result.idRanking()).isEqualTo(1L);
-        verify(rankingRepository).findById(1L);
-    }
-
-    @Test
-    @DisplayName("Should retrieve ranking by species ID")
-    void testGetRankingBySpecieId() {
-        // Arrange
-        when(rankingRepository.findBySpecieId(1L)).thenReturn(Optional.of(newRanking));
-        when(specieService.getEspecieEntityById(1L)).thenReturn(specieVulcan);
-        when(rankingMapper.toResponse(newRanking, specieVulcan)).thenReturn(rankingResponse);
-
-        // Act
-        RankingResponse result = rankingServiceImpl.getRankingBySpecieId(1L);
-
-        // Assert
-        assertThat(result).isNotNull();
-        assertThat(result.idEspecie()).isEqualTo(1L);
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).idEspecie()).isEqualTo(1L);
+        verify(rankingRepository).findAllOrderByVictories();
     }
 
     @Test

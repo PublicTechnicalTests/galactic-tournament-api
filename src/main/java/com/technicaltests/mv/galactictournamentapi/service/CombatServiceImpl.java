@@ -1,7 +1,7 @@
 package com.technicaltests.mv.galactictournamentapi.service;
 
-import com.technicaltests.mv.galactictournamentapi.dto.request.combat.StartCombatRequest;
 import com.technicaltests.mv.galactictournamentapi.dto.request.combat.AddCombatResultRequest;
+import com.technicaltests.mv.galactictournamentapi.dto.request.combat.StartCombatRequest;
 import com.technicaltests.mv.galactictournamentapi.dto.response.combat.CombatResponse;
 import com.technicaltests.mv.galactictournamentapi.entity.Combat;
 import com.technicaltests.mv.galactictournamentapi.entity.Specie;
@@ -32,6 +32,7 @@ public class CombatServiceImpl implements CombatService {
     private final CombatRepository combatRepository;
     private final CombatMapper combatMapper;
     private final SpecieService specieService;
+    private final RankingService rankingService;
 
     /**
      * Starts a battle between two species with automatic winner determination.
@@ -68,6 +69,8 @@ public class CombatServiceImpl implements CombatService {
 
         // Save battle
         Combat savedCombat = combatRepository.save(combat);
+
+        rankingService.addVictory(ganador.getSpecieId());
 
         log.info("Battle {} completed. Winner: {} (ID: {})",
                 savedCombat.getCombatId(),

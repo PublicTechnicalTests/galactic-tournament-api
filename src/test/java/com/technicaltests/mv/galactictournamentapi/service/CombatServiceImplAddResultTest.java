@@ -54,14 +54,22 @@ class CombatServiceImplAddResultTest {
     @BeforeEach
     void setUp() {
         // Setup Vulcan
-        specieVulcan = new Specie("Vulcan", 100, "Mind meditation");
-        specieVulcan.setSpecieId(1L);
-        specieVulcan.setCreationDate(LocalDateTime.now());
+        specieVulcan = Specie.builder()
+                .specieId(1L)
+                .name("Vulcan")
+                .power(100)
+                .ability("Mind meditation")
+                .creationDate(LocalDateTime.now())
+                .build();
 
         // Setup Klingon
-        specieKlingon = new Specie("Klingon", 150, "Warrior strength");
-        specieKlingon.setSpecieId(2L);
-        specieKlingon.setCreationDate(LocalDateTime.now());
+        specieKlingon = Specie.builder()
+                .specieId(2L)
+                .name("Klingon")
+                .power(150)
+                .ability("Warrior strength")
+                .creationDate(LocalDateTime.now())
+                .build();
 
         // Setup request specifying Klingon as winner
         battleResultRequest = new AddCombatResultRequest(1L, 2L, 2L);
@@ -69,15 +77,15 @@ class CombatServiceImplAddResultTest {
         // Setup saved battle
         savedCombat =
                 Combat.builder()
+                        .combatId(1L)
                         .firstContenderId(1L)
                         .secondContenderId(2L)
                         .winnerId(2L)
+                        .creationDate(LocalDateTime.now())
                         .build();
-        savedCombat.setCombatId(1L);
-        savedCombat.setFechaCreacion(LocalDateTime.now());
 
         // Setup response
-        combatResponse = new CombatResponse(1L, 1L, 2L, 2L, "Klingon", 150L, LocalDateTime.now());
+        combatResponse = new CombatResponse(1L, 1L, 2L, 2L, "Klingon", 150L);
     }
 
     @Test
@@ -135,19 +143,19 @@ class CombatServiceImplAddResultTest {
     void testAddBattleResultVulcanWins() {
         // Arrange
         AddCombatResultRequest vulcanWinsRequest = new AddCombatResultRequest(1L, 2L, 1L);
-        CombatResponse vulcanWinsResponse = new CombatResponse(2L, 1L, 2L, 1L, "Vulcan", 100L, LocalDateTime.now());
+        CombatResponse vulcanWinsResponse = new CombatResponse(2L, 1L, 2L, 1L, "Vulcan", 100L);
 
         when(specieService.getEspecieEntityById(1L)).thenReturn(specieVulcan);
         when(specieService.getEspecieEntityById(2L)).thenReturn(specieKlingon);
 
         Combat vulcanWinsCombat =
                 Combat.builder()
+                        .combatId(2L)
                         .firstContenderId(1L)
                         .secondContenderId(2L)
                         .winnerId(1L)
+                        .creationDate(LocalDateTime.now())
                         .build();
-        vulcanWinsCombat.setCombatId(2L);
-        vulcanWinsCombat.setFechaCreacion(LocalDateTime.now());
 
         when(combatRepository.save(any(Combat.class))).thenReturn(vulcanWinsCombat);
         when(combatMapper.toResponse(vulcanWinsCombat, specieVulcan)).thenReturn(vulcanWinsResponse);
@@ -161,4 +169,3 @@ class CombatServiceImplAddResultTest {
         verify(combatRepository).save(any(Combat.class));
     }
 }
-
